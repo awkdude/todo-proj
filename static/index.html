@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        <meta charset="utf-8">
+        <title>Front Page</title>
+        <link rel="icon" type="image/x-icon" href="resources/icon.ico">
+    </head>
+    <body>
+        <h1>Hello!</h1>
+        <script type="text/javascript" src="script.js"></script>
+        <script type="text/javascript">
+            let obj = {x: 1};
+            let obj2 = Object.create(obj);
+            obj2.x = 2;
+            console.log(`obj.x = ${obj.x}`);
+            console.log(`obj.prototype = ${obj.prototype}`);
+            console.log(`obj2.x = ${obj2.x}`);
+            console.log(`obj2.prototype = ${obj2.prototype}`);
+        </script>
+        <form name="acc_form" method="post" action="/">
+            <fieldset>
+                <legend>Personal Information</legend>
+                <p><label for="first_name">First Name</label>
+                <input type="text" id="first_name" name="first_name" 
+                                                   placeholder="John" required/></p>
+                <p><label for="last_name">Last Name</label>
+                <input type="text" id="last_name" name="last_name" 
+                                                  placeholder="Doe" required/></p>
+                <p><label for="the_email">Email</label>
+                <input type="email" id="the_email" name="the_email" 
+                                                   placeholder="johndoe@email.com"/></p>
+            </fieldset>
+            <div id="buttons">
+                <input type="submit" value="Submit"/>
+                <input type="reset" value="Reset"/>
+            </div>
+        </form>
+    </body>
+</html>
