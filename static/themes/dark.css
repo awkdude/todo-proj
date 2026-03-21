@@ -1,0 +1,11 @@
+label {
+    color: white;
+}
+body {
+    color: #eeeeee;
+    background-color: #101010;
+}
+input[type='text'],
+input[type='email'] {
+    border-color: #a00000;
+}

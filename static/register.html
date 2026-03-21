@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+    <head lang="en">
+        <meta charset="utf-8" />
+        <title>$TITLE$ - Create Account</title>
+        <link rel="icon" type="image/x-icon" href="resources/icon.ico" />
+        <link rel="linksheet" href="link.css" id="theme" />
+    </head>
+    <body>
+        <h1>$TITLE$</h1>
+        <h2>Create an Account</h2>
+        <script defer type="module" src="./script.js"></script>
+        <script type="text/javascript">
+            // FIXME: Only show password validation comment if both have some text
+            const MINIMUM_PASSWORD_LENGTH = 4;
+            document.addEventListener('DOMContentLoaded', (event) => {
+                document
+                    .querySelector('form')
+                    ?.addEventListener('submit', function (event) {
+                        alert('Submittion attempted');
+                        event.preventDefault();
+                    });
+                let passwordElement = document.querySelector('#the_password');
+                passwordElement.minLength = MINIMUM_PASSWORD_LENGTH;
+                passwordElement.addEventListener('input', (event) => {
+                    document.querySelector('#password_comment').innerHTML =
+                        event.target.value.length < MINIMUM_PASSWORD_LENGTH
+                            ? '❌This is too short!'
+                            : '✅Good password';
+                });
+                let confirmPasswordElement = document.querySelector('#confirm_password');
+                confirmPasswordElement.addEventListener('input', (event) => {
+                    document.querySelector('#confirm_password_comment').innerHTML =
+                        event.target.value === passwordElement.value
+                            ? '✅Password matches'
+                            : "❌Password does't match";
+                });
+                setTheme(current_theme_index);
+            });
+        </script>
+        <form id="create_acc_form" name="acc_form" method="post" action="/">
+            <fieldset>
+                <legend>Create Account</legend>
+                <div>
+                    <label for="the_name">Name</label>
+                    <input
+                        type="text"
+                        id="the_name"
+                        name="the_name"
+                        placeholder="John"
+                        required
+                    />
+                </div>
+                <div>
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="John"
+                        required
+                    />
+                </div>
+                <div>
+                    <label for="the_email">Email</label>
+                    <input
+                        type="email"
+                        id="the_email"
+                        name="the_email"
+                        placeholder="johndoe@email.com"
+                    />
+                </div>
+                <div>
+                    <label for="the_password">Password</label>
+                    <input type="password" id="the_password" name="the_password" />
+                    <p id="password_comment"></p>
+                </div>
+                <div>
+                    <label for="confirm_password">Confirm Password</label>
+                    <input
+                        type="password"
+                        id="confirm_password"
+                        name="confirm_password"
+                    />
+                    <p id="confirm_password_comment"></p>
+                </div>
+            </fieldset>
+            <div id="buttons">
+                <input type="submit" value="Submit" title="Submit to create an account" />
+            </div>
+        </form>
+        <button type="button">Thing</button>
+        <p id="stuff"></p>
+        <h2>Already have an account? <a href="/">Log in </a></h2>
+    </body>
+</html>

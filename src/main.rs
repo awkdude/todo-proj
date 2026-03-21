@@ -1,45 +1,67 @@
+use actix_files as afs;
+use actix_web::{
+    App, HttpRequest, HttpResponse, HttpServer, Responder, get, http::header, post, web,
+};
+use std::collections::HashMap;
 use std::fs;
-use std::io::{self, BufRead, BufReader, Write};
-use std::net::{TcpListener, TcpStream};
+use std::io;
+use std::path::PathBuf;
 
-fn main() {
-    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
-    let mut i = 0;
-    for stream in listener.incoming() {
-        let s = stream.unwrap();
-        handle_connection(s);
+fn respond_with_html_page(path: &str) -> HttpResponse {
+    let mut content = fs::read_to_string(path)
+        .unwrap_or_else(|_| fs::read_to_string("static/404.html").unwrap());
+    for (_macro, replacement) in HTML_MACROS {
+        content = content.replace(_macro, replacement);
     }
+    HttpResponse::Ok()
+        .content_type(header::ContentType::html())
+        .body(content)
 }
 
-fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&stream);
-    let mut http_request = buf_reader
-        .lines()
-        .map(|result| result.unwrap())
-        .take_while(|line| !line.is_empty());
-    let request_line = http_request.next().unwrap();
-    let remaining_request: Vec<_> = http_request.collect();
-    println!("Request: {remaining_request:#?}");
-
-    if request_line == "GET / HTTP/1.1" {
-        let contents = fs::read_to_string("static/index.html").unwrap();
-        let length = contents.len();
-
-        let status_line = "HTTP/1.1 200 OK";
-
-        let response =
-            format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
-
-        stream.write_all(response.as_bytes()).unwrap();
-    } else {
-        let contents = fs::read_to_string("404.html").unwrap();
-        let length = contents.len();
-
-        let status_line = "HTTP/1.1 404 NOT FOUND";
-
-        let response =
-            format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
-
-        stream.write_all(response.as_bytes()).unwrap();
+#[get("/")]
+async fn index(query: web::Query<HashMap<String, String>>) -> impl Responder {
+    // HttpResponse::Ok().body("Hello, World")
+    match query.get("mode") {
+        Some(m) if m == "register" => respond_with_html_page("static/register.html"),
+        _ => respond_with_html_page("static/login.html"),
     }
+    // NamedFile::open_async(index_content).await
+}
+
+#[get("/script.js")]
+async fn script() -> impl Responder {
+    // HttpResponse::Ok().body("Hello, World")
+    afs::NamedFile::open_async("static/script.js").await
+}
+
+#[get("/themes/{theme_name}.css")]
+async fn theme(path: web::Path<String>) -> impl Responder {
+    // HttpResponse::Ok().body("Hello, World")
+    afs::NamedFile::open_async(format!("static/themes/{}.css", path)).await
+}
+
+// #[get("/{name}")]
+// async fn _index(path: web::Path<String>) -> String {
+//     format!("Welcome, {}!", path)
+// }
+
+const APP_TITLE: &str = "PRODO";
+
+const HTML_MACROS: [(&str, &str); 1] = [("$TITLE$", APP_TITLE)];
+
+#[actix_web::main]
+async fn main() -> io::Result<()> {
+    HttpServer::new(|| {
+        // .service(hello)
+        App::new()
+            // .route("/", web::get().to(index))
+            // .route("/", web::post().to(index))
+            .service(index)
+            .service(script)
+            .service(theme)
+            .default_service(web::to(|| HttpResponse::NotFound()))
+    })
+    .bind(("127.0.0.1", 7878))?
+    .run()
+    .await
 }
