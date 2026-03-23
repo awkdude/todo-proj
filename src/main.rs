@@ -1,10 +1,15 @@
+use dotenvy::dotenv;
 use actix_files as afs;
-use actix_web::{
+use actix_web as actix;
+use serde::Deserialize;
+// FIXME: Import less
+use actix::{
     App, HttpRequest, HttpResponse, HttpServer, Responder, get, http::header, post, web,
 };
 use std::collections::HashMap;
 use std::fs;
 use std::io;
+use std::env;
 use std::path::PathBuf;
 
 fn respond_with_html_page(path: &str) -> HttpResponse {
@@ -28,16 +33,29 @@ async fn index(query: web::Query<HashMap<String, String>>) -> impl Responder {
     // NamedFile::open_async(index_content).await
 }
 
-#[get("/script.js")]
-async fn script() -> impl Responder {
-    // HttpResponse::Ok().body("Hello, World")
-    afs::NamedFile::open_async("static/script.js").await
+#[derive(Deserialize)]
+struct LoginInfo {
+    username: String,
+    password: String,
 }
 
-#[get("/themes/{theme_name}.css")]
-async fn theme(path: web::Path<String>) -> impl Responder {
+#[post("/")]
+async fn login_post(web::Form(form): web::Form<LoginInfo>) -> impl Responder {
     // HttpResponse::Ok().body("Hello, World")
-    afs::NamedFile::open_async(format!("static/themes/{}.css", path)).await
+    //     for (name, value) in req.headers().iter() {
+    // println!("{}: {}", name.as_str(), value.to_str().unwrap_or("---"));
+    //     }
+    println!(
+        "Attempting to login as ({}, {})",
+        form.username, form.password
+    );
+    respond_with_html_page("static/home.html")
+    // NamedFile::open_async(index_content).await
+}
+
+#[get("/home")]
+async fn home() -> impl Responder {
+    respond_with_html_page("static/home.html")
 }
 
 // #[get("/{name}")]
@@ -49,16 +67,22 @@ const APP_TITLE: &str = "PRODO";
 
 const HTML_MACROS: [(&str, &str); 1] = [("$TITLE$", APP_TITLE)];
 
-#[actix_web::main]
+#[actix::main]
 async fn main() -> io::Result<()> {
+    dotenv().ok();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set in .env");
+    // DELETE: "mysql://newuser:1024@localhost:3306/planner_db";
+    let pool = mysql::Pool::new(database_url.as_str()).unwrap();
+    let mut conn = pool.get_conn().unwrap();
     HttpServer::new(|| {
         // .service(hello)
         App::new()
-            // .route("/", web::get().to(index))
-            // .route("/", web::post().to(index))
             .service(index)
-            .service(script)
-            .service(theme)
+            .service(login_post)
+            .service(home)
+            .service(afs::Files::new("js/", "./static/js/"))
+            .service(afs::Files::new("css/", "./static/css/"))
+            .service(afs::Files::new("assets/", "./static/assets/"))
             .default_service(web::to(|| HttpResponse::NotFound()))
     })
     .bind(("127.0.0.1", 7878))?

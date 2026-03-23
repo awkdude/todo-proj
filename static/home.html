@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+    <head lang="en">
+        <meta charset="utf-8" />
+        <title>$TITLE$ | $USERNAME$</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- href="favicon.ico" /> -->
+        <link rel="stylesheet" href="css/style.css" id="theme" />
+        <link rel="stylesheet" href="css/style.css" />
+    </head>
+    <body>
+    <script defer type="module" src="js/home.js"></script>
+        <header>
+            <h1 id="welcome"></h1>
+            <h2 id="datetime"></h2>
+        </header>
+    <button id="addtask" popovertarget="create-task-dialog">+ Add task</button>
+    <dialog id="create-task-dialog" popover>
+        <form method="dialog">
+            <h2>Create Task</h2>
+            <p>
+                <label>Name: </label
+                ><input
+                    type="text"
+                    id="create-task-title"
+                    name="create-task-title"
+                    placeholder=""
+                    required
+                    autofocus
+                />
+            </p>
+            <p>
+                <label>Date & Time: </label
+                ><input
+                    type="datetime-local"
+                    id="create-task-datetime"
+                    name="create-task-datetime"
+                    required
+                />
+            </p>
+        </form>
+        <button
+            id="submit-creation"
+            class="positive"
+            popovertarget="create-task-dialog"
+            popovertargetaction="hide"
+        >
+            Add
+        </button>
+        <button
+            id="cancel-creation"
+            class="negative"
+            popovertarget="create-task-dialog"
+            popovertargetaction="hide"
+        >
+            Cancel
+        </button>
+    </dialog>
+
+    <div id="tasklist"></div>
+    </body>
+</html>

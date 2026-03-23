@@ -1,4 +1,7 @@
-# TODO
+# PRODO: A Todo web app 
+
+This is a web application implemented using HTML, CSS, and JavaScript. The backend is
+written in Rust using actix-web and mysql crates. 
 
 ## GUI (HTML, CSS, JavaScript)
 
@@ -18,4 +21,4 @@
 
 ## Server (Local, Rust)
 
-## Database (MySQL)
+## Database (MariaDB)

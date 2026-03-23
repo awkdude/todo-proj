@@ -2,26 +2,15 @@
 <html>
     <head lang="en">
         <meta charset="utf-8" />
-        <title>$TITLE$ - Create Account</title>
-        <link rel="icon" type="image/x-icon" href="resources/icon.ico" />
-        <link rel="linksheet" href="link.css" id="theme" />
+        <title>$TITLE$ | Log in</title>
+        <link rel="icon" type="image/x-icon" href="assets/icon.ico" />
+        <link rel="stylesheet" href="css/style.css" id="theme" />
     </head>
     <body>
         <h1>$TITLE$</h1>
         <h2>Create an Account</h2>
-        <script defer src="./script.js"></script>
-        <script type="text/javascript">
-            'use strict';
-            document.addEventListener('DOMContentLoaded', (event) => {
-                document
-                    .querySelector('form')
-                    ?.addEventListener('submit', function (event) {
-                        alert('Submittion attempted');
-                        event.preventDefault();
-                    });
-            });
-        </script>
-        <form id="login" name="login" method="post" action="/">
+        <script defer src="js/script.js"></script>
+        <form id="login" name="login" method="POST" action="/">
             <fieldset>
                 <legend>Login</legend>
                 <div>
@@ -36,7 +25,7 @@
                 </div>
                 <div>
                     <label for="the_password">Password</label>
-                    <input type="password" id="the_password" name="the_password" />
+                    <input type="password" id="the_password" name="password" />
                     <p id="password_comment"></p>
                 </div>
             </fieldset>
@@ -45,5 +34,14 @@
             </div>
         </form>
         <h2>Don't have an account? <a href="/?mode=register">Sign up</a></h2>
+        <script type="module">
+            document
+                .querySelector('form#login')
+                ?.addEventListener('submit', function (event) {
+                    // TODO:
+                    // alert('Submittion attempted');
+                    // event.preventDefault();
+                });
+        </script>
     </body>
 </html>

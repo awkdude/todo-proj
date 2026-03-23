@@ -1,0 +1,59 @@
+:root {
+    color-scheme: light dark;
+}
+label {
+}
+input[type='text'],
+input[type='email'] {
+    border-radius: 10px;
+}
+
+.positive {
+    background-color: green;
+}
+
+.negative {
+    background-color: red;
+}
+
+#tooltip {
+    background-color: cyan;
+    border-color: #002060;
+    color: black;
+}
+.hidden {
+    display: none;
+}
+
+header {
+    text-align: center;
+}
+
+input[type='checkbox'] {
+    color: green;
+    width: 36px;
+    height: 36px;
+}
+
+button#addtask {
+    font-size: 12pt;
+}
+
+.tasklist {
+    display: flex;
+    align-items: center;
+}
+
+.taskitem {
+    border: 4px solid black;
+    background-color: #a0d0ff;
+    border-radius: 10px;
+    margin-bottom: 4px;
+}
+
+.tasklabel {
+    vertical-align: middle;
+    font-family: 'Fira Mono';
+    font-weight: bold;
+    color: red;
+}
