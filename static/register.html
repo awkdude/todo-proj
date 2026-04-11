@@ -3,24 +3,30 @@
     <head lang="en">
         <meta charset="utf-8" />
         <title>$TITLE$ | Create Account</title>
-        <link rel="icon" type="image/x-icon" href="assets/icon.ico" />
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <link rel="stylesheet" href="css/style.css" />
-        <link rel="stylesheet" href="css/style.css" id="theme" />
+        <link rel="stylesheet" id="theme" />
     </head>
     <body>
+        <script defer type="module" src="js/script.js"></script>
+        <script defer type="module" src="js/register.js"></script>
         <h1>$TITLE$</h1>
         <h2>Create an Account</h2>
-        <script defer type="module" src="js/script.js"></script>
-        <form id="create_acc_form" name="acc_form" method="post" action="/">
+        <form
+            id="create-acc-form"
+            name="acc-form"
+            method="POST"
+            action="/api/users"
+        >
             <fieldset>
                 <legend>Create Account</legend>
                 <div>
-                    <label for="the_name">Name</label>
+                    <label for="fullname">Name</label>
                     <input
                         type="text"
-                        id="the_name"
-                        name="the_name"
-                        placeholder="John"
+                        id="fullname"
+                        name="fullname"
+                        placeholder="John Doe"
                         required
                     />
                 </div>
@@ -33,60 +39,41 @@
                         placeholder="johndoe123"
                         required
                     />
-                    <p id="username-comment"></p>
+                    <p class="input-comment" id="username-comment"></p>
+                </div>
+                <!-- <div> -->
+                <!--     <label for="email">Email</label> -->
+                <!--     <input -->
+                <!--         type="email" -->
+                <!--         id="email" -->
+                <!--         name="email" -->
+                <!--         placeholder="johndoe@email.com" -->
+                <!--     /> -->
+                <!-- </div> -->
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" />
+                    <p class="input-comment" id="password-comment"></p>
                 </div>
                 <div>
-                    <label for="the_email">Email</label>
-                    <input
-                        type="email"
-                        id="the_email"
-                        name="the_email"
-                        placeholder="johndoe@email.com"
-                    />
-                </div>
-                <div>
-                    <label for="the_password">Password</label>
-                    <input type="password" id="the_password" name="the_password" />
-                    <p id="password_comment"></p>
-                </div>
-                <div>
-                    <label for="confirm_password">Confirm Password</label>
+                    <label for="confirm-password">Confirm Password</label>
                     <input
                         type="password"
-                        id="confirm_password"
+                        id="confirm-password"
                         name="confirm_password"
                     />
-                    <p id="confirm_password_comment"></p>
+                    <p class="input-comment" id="confirm-password-comment"></p>
                 </div>
             </fieldset>
             <div id="buttons">
-                <input type="submit" value="Submit" title="Submit to create an account" />
+                <input
+                    type="submit"
+                    value="Submit"
+                    title="Submit to create an account"
+                />
             </div>
         </form>
         <p id="stuff"></p>
         <h2>Already have an account? <a href="/">Log in </a></h2>
-        <script type="module">
-            const MINIMUM_PASSWORD_LENGTH = 4;
-            document.querySelector('form')?.addEventListener('submit', function (event) {
-                alert('Submittion attempted');
-                event.preventDefault();
-            });
-            let passwordElement = document.querySelector('#the_password');
-            passwordElement.minLength = MINIMUM_PASSWORD_LENGTH;
-            passwordElement.addEventListener('input', (event) => {
-                document.querySelector('#password_comment').innerHTML =
-                    event.target.value.length < MINIMUM_PASSWORD_LENGTH
-                        ? '❌This is too short!'
-                        : '✅Good password';
-            });
-            let confirmPasswordElement = document.querySelector('#confirm_password');
-            confirmPasswordElement.addEventListener('input', (event) => {
-                document.querySelector('#confirm_password_comment').innerHTML =
-                    event.target.value === passwordElement.value
-                        ? '✅Password matches'
-                        : "❌Password does't match";
-            });
-            setTheme(current_theme_index);
-        </script>
     </body>
 </html>

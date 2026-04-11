@@ -5,58 +5,93 @@
         <title>$TITLE$ | $USERNAME$</title>
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- href="favicon.ico" /> -->
-        <link rel="stylesheet" href="css/style.css" id="theme" />
         <link rel="stylesheet" href="css/style.css" />
+        <link rel="stylesheet" id="theme" />
     </head>
     <body>
-    <script defer type="module" src="js/home.js"></script>
+        <script defer type="module" src="js/script.js"></script>
+        <script defer type="module" src="js/home.js"></script>
         <header>
             <h1 id="welcome"></h1>
             <h2 id="datetime"></h2>
         </header>
-    <button id="addtask" popovertarget="create-task-dialog">+ Add task</button>
-    <dialog id="create-task-dialog" popover>
-        <form method="dialog">
-            <h2>Create Task</h2>
-            <p>
-                <label>Name: </label
-                ><input
-                    type="text"
-                    id="create-task-title"
-                    name="create-task-title"
-                    placeholder=""
-                    required
-                    autofocus
+        <section>
+            <header>
+                <button id="addtask" popovertarget="create-task-dialog">
+                    + Add task
+                </button>
+                <button id="view-history-button">
+                    <svg id="history-icon" width="20" height="20">
+                        <circle class="face" cx="10" cy="10" r="5"></circle>
+                    </svg>
+                    History
+                </button>
+                <input
+                    type="radio"
+                    id="daily-view"
+                    name="view-type"
+                    value="daily"
+                    checked
                 />
-            </p>
-            <p>
-                <label>Date & Time: </label
-                ><input
-                    type="datetime-local"
-                    id="create-task-datetime"
-                    name="create-task-datetime"
-                    required
+                <p>View:</p>
+                <input
+                    type="radio"
+                    id="daily-view"
+                    name="view-type"
+                    value="daily"
                 />
-            </p>
-        </form>
-        <button
-            id="submit-creation"
-            class="positive"
-            popovertarget="create-task-dialog"
-            popovertargetaction="hide"
-        >
-            Add
-        </button>
-        <button
-            id="cancel-creation"
-            class="negative"
-            popovertarget="create-task-dialog"
-            popovertargetaction="hide"
-        >
-            Cancel
-        </button>
-    </dialog>
+                <label for="daily-view">Daily</label>
+                <input
+                    type="radio"
+                    id="monthly-view"
+                    name="view-type"
+                    value="monthly"
+                />
+                <label for="monthly-view">Monthly</label>
+            </header>
+            <dialog id="create-task-dialog" popover>
+                <form method="dialog">
+                    <h2>Create Task</h2>
+                    <p>
+                        <label>Name: </label
+                        ><input
+                            type="text"
+                            id="create-task-title"
+                            name="create-task-title"
+                            placeholder=""
+                            required
+                            autofocus
+                        />
+                    </p>
+                    <p>
+                        <label>Date &amp; Time: </label
+                        ><input
+                            type="datetime-local"
+                            id="create-task-datetime"
+                            name="create-task-datetime"
+                            required
+                        />
+                    </p>
+                </form>
+                <button
+                    id="submit-creation"
+                    class="positive"
+                    popovertarget="create-task-dialog"
+                    popovertargetaction="hide"
+                >
+                    Add
+                </button>
+                <button
+                    id="cancel-creation"
+                    class="negative"
+                    popovertarget="create-task-dialog"
+                    popovertargetaction="hide"
+                >
+                    Cancel
+                </button>
+            </dialog>
 
-    <div id="tasklist"></div>
+            <div id="tasklist"></div>
+        </section>
     </body>
 </html>

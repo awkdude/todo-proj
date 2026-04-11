@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+    <head lang="en">
+        <meta charset="utf-8" />
+        <title>$TITLE$ | Log in</title>
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <link rel="stylesheet" href="css/style.css" />
+        <link rel="stylesheet" id="theme" />
+    </head>
+    <body>
+        <h1>$TITLE$</h1>
+        <script defer type="module" src="js/script.js"></script>
+        <script defer type="module" src="js/history.js"></script>
+        <section>
+            <header>
+                <h2>January</h2>
+            </header>
+            <table id="calendar">
+                <thead>
+                    <tr>
+                        <th>Sun</th>
+                        <th>Mon</th>
+                        <th>Tue</th>
+                        <th>Wed</th>
+                        <th>Thu</th>
+                        <th>Fri</th>
+                        <th>Sat</th>
+                    </tr>
+                </thead>
+                <tbody id="calendar-body"></tbody>
+            </table>
+        </section>
+        <p id="dd"></p>
+        <script type="module">
+            let calendar_body = document.querySelector('#calendar-body');
+            for (let y = 0; y < 5; ++y) {
+                let row = document.createElement('tr');
+                for (let x = 0; x < 7; ++x) {
+                    let cell = document.createElement('td');
+                    cell.className = 'day-cell';
+                    row.append(cell);
+                }
+                calendar_body.append(row);
+            }
+        </script>
+    </body>
+</html>
