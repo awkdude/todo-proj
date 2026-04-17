@@ -2,14 +2,15 @@
 <html>
     <head lang="en">
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>$TITLE$ | Create Account</title>
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <link rel="stylesheet" href="css/style.css" />
         <link rel="stylesheet" id="theme" />
-    </head>
-    <body>
         <script defer type="module" src="js/script.js"></script>
         <script defer type="module" src="js/register.js"></script>
+    </head>
+    <body>
         <h1>$TITLE$</h1>
         <h2>Create an Account</h2>
         <form
@@ -41,15 +42,6 @@
                     />
                     <p class="input-comment" id="username-comment"></p>
                 </div>
-                <!-- <div> -->
-                <!--     <label for="email">Email</label> -->
-                <!--     <input -->
-                <!--         type="email" -->
-                <!--         id="email" -->
-                <!--         name="email" -->
-                <!--         placeholder="johndoe@email.com" -->
-                <!--     /> -->
-                <!-- </div> -->
                 <div>
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" />
@@ -74,6 +66,6 @@
             </div>
         </form>
         <p id="stuff"></p>
-        <h2>Already have an account? <a href="/">Log in </a></h2>
+        <h2>Already have an account? <a href="/login">Log in </a></h2>
     </body>
 </html>

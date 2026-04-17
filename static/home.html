@@ -2,15 +2,16 @@
 <html>
     <head lang="en">
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>$TITLE$ | $USERNAME$</title>
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-        <!-- href="favicon.ico" /> -->
         <link rel="stylesheet" href="css/style.css" />
         <link rel="stylesheet" id="theme" />
-    </head>
-    <body>
         <script defer type="module" src="js/script.js"></script>
         <script defer type="module" src="js/home.js"></script>
+    </head>
+    <body>
+        <p id="size"></p>
         <header>
             <h1 id="welcome"></h1>
             <h2 id="datetime"></h2>
@@ -26,28 +27,31 @@
                     </svg>
                     History
                 </button>
-                <input
-                    type="radio"
-                    id="daily-view"
-                    name="view-type"
-                    value="daily"
-                    checked
-                />
-                <p>View:</p>
-                <input
-                    type="radio"
-                    id="daily-view"
-                    name="view-type"
-                    value="daily"
-                />
-                <label for="daily-view">Daily</label>
-                <input
-                    type="radio"
-                    id="monthly-view"
-                    name="view-type"
-                    value="monthly"
-                />
-                <label for="monthly-view">Monthly</label>
+                <button id="settings-button">Settings</button>
+                <div>
+                    View:
+                    <input
+                        type="radio"
+                        id="daily-view"
+                        name="view-type"
+                        value="daily"
+                    />
+                    <label for="daily-view">Daily</label>
+                    <input
+                        type="radio"
+                        id="weekly-view"
+                        name="view-type"
+                        value="weekly"
+                    />
+                    <label for="weekly-view">Weekly</label>
+                    <input
+                        type="radio"
+                        id="monthly-view"
+                        name="view-type"
+                        value="monthly"
+                    />
+                    <label for="monthly-view">Monthly</label>
+                </div>
             </header>
             <dialog id="create-task-dialog" popover>
                 <form method="dialog">
@@ -90,8 +94,9 @@
                     Cancel
                 </button>
             </dialog>
-
-            <div id="tasklist"></div>
+            <div id="task-view">
+                <canvas id="grid"></canvas>
+            </div>
         </section>
     </body>
 </html>

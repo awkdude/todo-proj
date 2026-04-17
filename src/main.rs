@@ -1,35 +1,28 @@
+mod util;
 use actix_files as afs;
 use actix_web as actix;
 use dotenvy::dotenv;
 use serde::{Deserialize, Serialize};
 // FIXME: Import less
 use actix::{Responder, delete, get, http::header, post, put, web};
-use sqlx::mysql;
+use serde_json::json;
+use sqlx::{Row, mysql};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::io;
 
-fn respond_with_html_page(path: &str) -> impl Responder {
-    let mut content = fs::read_to_string(path)
-        .unwrap_or_else(|_| fs::read_to_string("static/404.html").unwrap());
-    for (_macro, replacement) in HTML_MACROS {
-        content = content.replace(_macro, replacement);
-    }
-    // actix::HttpResponse::Ok()
-    //     .content_type(header::ContentType::html())
-    //     .body(content)
-    web::Html::new(content)
-}
+pub type IDType = u64;
 
-#[get("/")]
-async fn index(query: web::Query<HashMap<String, String>>) -> impl Responder {
-    // HttpResponse::Ok().body("Hello, World")
-    match query.get("mode") {
-        Some(m) if m == "register" => respond_with_html_page("static/register.html"),
-        _ => respond_with_html_page("static/login.html"),
-    }
-}
+// #[get("/")]
+// async fn index(query: web::Query<HashMap<String, String>>) -> impl Responder {
+//     // HttpResponse::Ok().body("Hello, World")
+//     // match query.get("mode") {
+//     //     Some(m) if m == "register" => respond_with_html_page("static/register.html"),
+//     //     _ => respond_with_html_page("static/login.html"),
+//     // }
+//     respond_with_html_page("static/index.html")
+// }
 
 #[derive(Debug, Deserialize)]
 struct LoginInfo {
@@ -39,6 +32,7 @@ struct LoginInfo {
 
 #[derive(Serialize)]
 struct UserInfo {
+    pub id: IDType,
     pub fullname: String,
     pub username: String,
 }
@@ -51,9 +45,26 @@ struct CreateUserInfo {
     // pub confirm_password: String,
 }
 
+#[derive(Debug, Deserialize)]
+struct CreateTaskInfo {
+    pub title: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct TaskInfo {
+    pub id: i64,
+    pub title: String,
+    pub completion_value: i32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateTaskInfo {
+    pub completion_value: i32,
+}
+
 #[post("/api/sessions")]
 async fn auth_login(
-     info: web::Json<LoginInfo>,
+    info: web::Json<LoginInfo>,
     db_pool: web::Data<mysql::MySqlPool>,
 ) -> actix::HttpResponse {
     println!(
@@ -61,46 +72,25 @@ async fn auth_login(
         info.username, info.password
     );
     let query_string = format!(
-        "SELECT username, password_hash FROM users WHERE (username = '{}') AND (password_hash = {})",
+        "SELECT id, username, password_hash FROM users WHERE (username = '{}') AND (password_hash = {})",
         info.username,
-        hash_string(&info.password)
+        util::hash_string(&info.password)
     );
     match sqlx::query(&query_string)
         .fetch_one(db_pool.get_ref())
         .await
     {
-        Ok(_) => {
+        Ok(row) => {
             println!("Found!");
-            let cookie = actix::cookie::Cookie::new("user", &info.username);
-            actix::HttpResponse::Accepted().append_header(("Access-Control-Allow-Credentials", 1)).cookie(cookie).finish()
+            let user_id = row.get::<i64, &str>("id");
+            actix::HttpResponse::Accepted()
+                .json(json!({"user_id": user_id, "redirect": "/home"}))
         }
         Err(e) => {
             println!("Not Found!: {e}");
             actix::HttpResponse::NotAcceptable().finish()
         }
     }
-}
-
-// #[post("/")]
-// async fn login_page() -> impl Responder {
-//     respond_with_html_page("static/home.html")
-// }
-
-#[get("/home")]
-async fn home() -> impl Responder {
-    respond_with_html_page("static/home.html")
-}
-
-#[get("/history")]
-async fn history() -> impl Responder {
-    respond_with_html_page("static/history.html")
-}
-
-fn hash_string(s: &str) -> u64 {
-    use std::hash::{DefaultHasher, Hash, Hasher};
-    let mut hasher = DefaultHasher::new();
-    s.hash(&mut hasher);
-    hasher.finish()
 }
 
 #[post("/api/users")]
@@ -114,51 +104,168 @@ async fn create_user(
         "INSERT INTO users (username, fullname, password_hash) VALUES ('{}', '{}', {})",
         info.username,
         info.fullname,
-        hash_string(&info.password)
+        util::hash_string(&info.password)
     );
-    sqlx::query(&query_string)
-        .execute(db_pool.get_ref())
-        .await
-        .map_or_else(
-            |err| {
-                eprintln!("ERR: {:?}", err);
-                actix::HttpResponse::NotFound().finish()
-            },
-            |_| actix::HttpResponse::Created().json(()),
-        )
+    match sqlx::query(&query_string).execute(db_pool.get_ref()).await {
+        Ok(result) => {
+            let user_id: IDType = result.last_insert_id();
+            println!("Created: {:?}", result);
+            actix::HttpResponse::Accepted()
+                .json(json!({"user_id": user_id, "redirect": "/home"}))
+        }
+        Err(err) => {
+            eprintln!("ERR: {:?}", err);
+            actix::HttpResponse::NotFound().finish()
+        }
+    }
 }
 
-#[get("/api/users")]
-async fn get_users(db_pool: web::Data<mysql::MySqlPool>) -> impl Responder {
+#[get("/tasks/{user_id}")]
+async fn get_tasks(
+    req: actix::HttpRequest,
+    db_pool: web::Data<mysql::MySqlPool>,
+) -> impl Responder {
+    let user_id: IDType = req.match_info().get("user_id").unwrap().parse().unwrap();
+    let query_string = format!("SELECT * FROM tasks WHERE user_id = {user_id}");
+    let mut tasks: Vec<TaskInfo> = vec![];
+    match sqlx::query(&query_string)
+        .fetch_all(db_pool.get_ref())
+        .await
+    {
+        Ok(result) => {
+            for (i, row) in result.into_iter().enumerate() {
+                let id = row.get::<i64, &str>("id");
+                let title = row.get::<String, &str>("title");
+                let completion_value = row.get::<i32, &str>("completion_value");
+                tasks.push(TaskInfo {
+                    id,
+                    title: title.clone(),
+                    completion_value,
+                });
+                println!("({}, {}, {})", id, title, completion_value);
+            }
+        }
+        Err(err) => {}
+    };
+    actix::HttpResponse::Ok().json(tasks)
+}
+
+#[post("/tasks/{user_id}")]
+async fn post_task(
+    req: actix::HttpRequest,
+    create_task: web::Json<CreateTaskInfo>,
+    db_pool: web::Data<mysql::MySqlPool>,
+) -> impl Responder {
+    let user_id: IDType = req.match_info().get("user_id").unwrap().parse().unwrap();
+    let query_string = format!(
+        "INSERT INTO tasks (title, user_id) VALUES ('{}', {user_id})",
+        create_task.title
+    );
+    match sqlx::query(&query_string).execute(db_pool.get_ref()).await {
+        Ok(_) => actix::HttpResponse::Created().finish(),
+        Err(err) => {
+            eprintln!("{:?}", err);
+            actix::HttpResponse::NotAcceptable().finish()
+        }
+    }
+}
+
+#[put("/tasks/{task_id}")]
+async fn update_task(
+    req: actix::HttpRequest,
+    task: web::Json<UpdateTaskInfo>,
+    db_pool: web::Data<mysql::MySqlPool>,
+) -> impl Responder {
+    println!("attempting to update task");
+    let task_id: i32 = util::match_param(&req, "task_id");
+    let completion_value = task.completion_value;
+    let query_string = format!(
+        "UPDATE tasks SET completion_value = {completion_value} WHERE id = {task_id}"
+    );
+    match sqlx::query(&query_string).execute(db_pool.get_ref()).await {
+        Ok(_) => {
+            println!("Updated task {task_id}");
+            actix::HttpResponse::Ok().finish()
+        }
+        Err(_) => actix::HttpResponse::NotModified().finish(),
+    }
+}
+
+#[delete("/tasks/{task_id}")]
+async fn delete_task(
+    req: actix::HttpRequest,
+    db_pool: web::Data<mysql::MySqlPool>,
+) -> impl Responder {
+    let task_id: i32 = util::match_param(&req, "task_id");
+    let query_string = format!("DELETE from tasks WHERE id = {task_id}");
+    match sqlx::query(&query_string).execute(db_pool.get_ref()).await {
+        Ok(_) => {
+            println!("Deleted task {task_id}!");
+            actix::HttpResponse::Ok().finish()
+        },
+        Err(_) => {
+            eprintln!("Could not delete task {task_id}");
+            actix::HttpResponse::NotFound().finish()
+        }
+    }
+}
+
+#[get("/login")]
+async fn login(req: actix::HttpRequest) -> impl Responder {
+    util::respond_with_html_page("static/login.html")
+}
+
+#[get("/register")]
+async fn register(req: actix::HttpRequest) -> impl Responder {
+    util::respond_with_html_page("static/register.html")
+}
+
+#[get("/home")]
+async fn home(req: actix::HttpRequest) -> impl Responder {
+    util::respond_with_html_page("static/home.html")
+}
+
+#[get("/history")]
+async fn history() -> impl Responder {
+    util::respond_with_html_page("static/history.html")
+}
+
+#[get("/api/users/{user_id}")]
+async fn get_users(
+    req: actix::HttpRequest,
+    db_pool: web::Data<mysql::MySqlPool>,
+) -> impl Responder {
     use header::ContentType;
     use sqlx::Row;
-    let q = sqlx::query("SELECT * FROM users")
+    let user_id: IDType = req.match_info().get("user_id").unwrap().parse().unwrap();
+    let query_string = format!("SELECT * FROM users WHERE id = {user_id}");
+    let result = sqlx::query(&query_string)
         .fetch_one(db_pool.get_ref())
         .await;
-    q.map_or(actix::HttpResponse::NotFound().finish(), |row| {
+    result.map_or(actix::HttpResponse::NotFound().finish(), |row| {
         let fullname = row.get::<&str, _>("fullname").to_string();
         let username = row.get::<&str, _>("username").to_string();
         actix::HttpResponse::Ok()
             .content_type(ContentType::json())
-            .json(UserInfo { fullname, username })
+            .json(UserInfo {
+                id: user_id,
+                fullname,
+                username,
+            })
     })
 }
-
-const APP_TITLE: &str = "PRODO";
-
-const HTML_MACROS: [(&str, &str); 1] = [("$TITLE$", APP_TITLE)];
 
 #[actix::main]
 async fn main() -> io::Result<()> {
     dotenv().ok();
     let database_url = env::var("DATABASE_URL")
-        .unwrap_or("mysql://newuser:1024@loclhost:3306/planner_db".to_string());
+        .unwrap_or("mysql://root:@loclhost:3306/planner_db".to_string());
     println!("waiting to connect");
     let db_pool = sqlx::MySqlPool::connect_lazy(database_url.as_str())
         .expect("ERROR: Failed to connect to DB");
     let _ = dbg!(
-        sqlx::query(CREATE_USER_TABLE_STATEMENT)
-            .execute(&db_pool)
+        sqlx::query_file!("./sql/create.sql")
+            .execute_many(&db_pool)
             .await
     );
     println!("connected");
@@ -166,13 +273,19 @@ async fn main() -> io::Result<()> {
         // .service(hello)
         actix::App::new()
             .app_data(web::Data::new(db_pool.clone()))
-            .service(index)
+            .service(web::redirect("/", "/login"))
             .service(auth_login)
+            .service(login)
+            .service(register)
             // .service(login_page)
             .service(home)
             .service(history)
             .service(get_users)
             .service(create_user)
+            .service(post_task)
+            .service(get_tasks)
+            .service(update_task)
+            .service(delete_task)
             .service(afs::Files::new("js/", "./static/js/"))
             .service(afs::Files::new("css/", "./static/css/"))
             .service(afs::Files::new("assets/", "./static/assets/"))
@@ -183,18 +296,3 @@ async fn main() -> io::Result<()> {
     .run()
     .await
 }
-
-const CREATE_USER_TABLE_STATEMENT: &str = "CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(32) UNIQUE NOT NULL,
-    fullname VARCHAR(64) NOT NULL,
-    password_hash TEXT NOT NULL, -- TODO: Make hash
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)";
-
-const CREATE_TASK_TABLE_STATEMENT: &str = "CREATE TABLE IF NOT EXISTS tasks (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)";
-const CREATE_RECURRING_TASK_TABLE_STATEMENT: &str = "";

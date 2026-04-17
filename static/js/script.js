@@ -1,3 +1,13 @@
+let toast_element = document.createElement('div');
+toast_element.id = 'toast';
+// toast_element.classList.add('transparent');
+toast_element.classList.add('fadeable');
+toast_element.innerHTML = '<p>This is a toast!</p>';
+document.body.prepend(toast_element);
+setTimeout(() => {
+    document.querySelector('#toast').classList.remove('transparent');
+}, 2000);
+//
 const LIGHT_THEME_INDEX = 0;
 const DARK_THEME_INDEX = 1;
 
@@ -18,6 +28,7 @@ dark_mode_mql?.addEventListener('change', (event) => {
 });
 
 function setTheme(index) {
+    // {{{
     const theme_paths = ['css/light.css', 'css/dark.css'];
     let new_theme = document.createElement('link');
     new_theme.id = 'theme';
@@ -30,6 +41,7 @@ function setTheme(index) {
         document.head.append(new_theme);
     }
     current_theme_index = index;
+    // }}}
 }
 
 document.body.addEventListener('keyup', function (event) {
@@ -37,15 +49,3 @@ document.body.addEventListener('keyup', function (event) {
         setTheme(current_theme_index + 1);
     }
 });
-
-let toast_element = document.createElement('div');
-toast_element.id = 'toast';
-// toast_element.classList.add('transparent');
-toast_element.classList.add('fadeable');
-toast_element.innerHTML = '<p>This is a toast!</p>';
-document.body.prepend(toast_element);
-setTimeout(() => {
-    document.querySelector('#toast').classList.remove('transparent');
-}, 2000);
-
-// setTheme(0);

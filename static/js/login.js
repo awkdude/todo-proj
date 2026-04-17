@@ -1,23 +1,27 @@
+import { setUserSessionInfo } from '/js/util.js';
+
 console.log(`Cookies on load: ${document.cookie}`);
 const login_form = document.querySelector('form#login');
 
-login_form?.addEventListener('submit', function (event) {
+login_form?.addEventListener('submit', async function (event) {
     event.preventDefault();
     const form_data = new FormData(event.target); // event.target);
-    const data = Object.fromEntries(form_data.entries());
-    fetch('/api/sessions', {
+    const login_data = Object.fromEntries(form_data.entries());
+    let response = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(data),
-    }).then((response) => {
-        const error_element = document.querySelector('#login-error');
-        error_element.hidden = response.ok;
-        if (response.ok) {
-            console.log(`Cookies: ${response.headers.getSetCookie()}`);
-            // document.cookie = `user`
-        } else {
-        }
-        console.log(response.ok ? 'OK' : 'NO');
+        body: JSON.stringify(login_data),
     });
+    // .then((response) => {
+    // });
+    const error_element = document.querySelector('#login-error');
+    error_element.hidden = response.ok;
+    if (response.ok) {
+        const data = await response.json();
+        setUserSessionInfo(data.user_id);
+        window.location.href = data.redirect;
+    } else {
+    }
+    console.log(response.ok ? 'OK' : 'NO');
 });

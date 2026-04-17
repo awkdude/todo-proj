@@ -1,3 +1,5 @@
+import { setUserSessionInfo } from '/js/util.js';
+
 const test_button = document.querySelector('button#test');
 test_button?.addEventListener('click', (event) => {
     fetch('', { method: 'POST' })
@@ -11,22 +13,25 @@ test_button?.addEventListener('click', (event) => {
 });
 const MINIMUM_PASSWORD_LENGTH = 4;
 const form = document.querySelector('form');
-form?.addEventListener('submit', function (event) {
-    console.log(`Action: ${event.target.action}`);
+form?.addEventListener('submit', async function (event) {
     event.preventDefault();
+    console.log(`Action: ${event.target.action}`);
     const form_data = new FormData(form); // event.target);
-    const data = Object.fromEntries(form_data.entries());
+    const register_data = Object.fromEntries(form_data.entries());
     for (let [k, v] of form_data.entries()) {
         console.log(`Form data: ${k}: ${v}`);
     }
-    fetch(event.target.action, {
-        method: event.target.method,
+    let response = fetch(event.target.action, {
+        method: 'POST', // event.target.method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(register_data),
     })
-        .then((response) => {
+        .then(async (response) => {
             if (response.ok) {
                 console.log('User created!');
+                const data = await response.json();
+                setUserSessionInfo(data.user_id);
+                window.location.href = data.redirect;
             } else {
                 console.error('ERROR');
             }
