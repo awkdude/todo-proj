@@ -52,6 +52,8 @@
                     />
                     <label for="monthly-view">Monthly</label>
                 </div>
+                <button id="prev">&lt;</button>
+                <button id="next">&gt;</button>
             </header>
             <dialog id="create-task-dialog" popover>
                 <form method="dialog">
@@ -94,9 +96,11 @@
                     Cancel
                 </button>
             </dialog>
-            <div id="task-view">
-                <canvas id="grid"></canvas>
-            </div>
+            <main id="task-view">
+                <canvas id="grid" width="900" height="1000"></canvas>
+                <section id="task-elements">
+                </section>
+            </main>
         </section>
     </body>
 </html>

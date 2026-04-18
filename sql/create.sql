@@ -11,24 +11,18 @@ CREATE TABLE IF NOT EXISTS recurring_tasks (
     title VARCHAR(80) NOT NULL,
     frequency_type INT,
     frequency_type_value INT,
-    start_date TIMESTAMP DEFAULT CURRENT TIMESTAMP,
+    start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_range BOOL NOT NULL,
+    is_range BOOL NOT NULL DEFAULT 0,
     completion_min INT,
     completion_max INT
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    prototype_id INT NOT NULL,
     user_id INT NOT NULL,
-    -- CONSTRAINT fk_user
-    -- FOREIGN KEY (user_id) REFERENCES users(id),
-    title VARCHAR(80) NOT NULL,
-    completion_value INT NOT NULL DEFAULT 0
+    completion_value INT NOT NULL DEFAULT 0,
+    due_date TIMESTAMP
 );
--- CREATE TABLE IF NOT EXISTS tasks (
---     id INT AUTO_INCREMENT PRIMARY KEY,
---     prototype_id INT NOT NULL,
---     completion_value INT NOT NULL DEFAULT 0,
--- )

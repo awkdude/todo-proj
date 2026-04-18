@@ -52,7 +52,7 @@ struct CreateTaskInfo {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct TaskInfo {
-    pub id: i64,
+    pub id: i32,
     pub title: String,
     pub completion_value: i32,
 }
@@ -82,7 +82,7 @@ async fn auth_login(
     {
         Ok(row) => {
             println!("Found!");
-            let user_id = row.get::<i64, &str>("id");
+            let user_id = row.get::<i32, &str>("id");
             actix::HttpResponse::Accepted()
                 .json(json!({"user_id": user_id, "redirect": "/home"}))
         }
@@ -120,12 +120,12 @@ async fn create_user(
     }
 }
 
-#[get("/tasks/{user_id}")]
+#[get("/api/tasks/{user_id}")]
 async fn get_tasks(
     req: actix::HttpRequest,
     db_pool: web::Data<mysql::MySqlPool>,
 ) -> impl Responder {
-    let user_id: IDType = req.match_info().get("user_id").unwrap().parse().unwrap();
+    let user_id = util::match_param::<i32>(&req, "user_id");
     let query_string = format!("SELECT * FROM tasks WHERE user_id = {user_id}");
     let mut tasks: Vec<TaskInfo> = vec![];
     match sqlx::query(&query_string)
@@ -133,8 +133,8 @@ async fn get_tasks(
         .await
     {
         Ok(result) => {
-            for (i, row) in result.into_iter().enumerate() {
-                let id = row.get::<i64, &str>("id");
+            for row in result.into_iter() {
+                let id = row.get::<i32, &str>("id");
                 let title = row.get::<String, &str>("title");
                 let completion_value = row.get::<i32, &str>("completion_value");
                 tasks.push(TaskInfo {
@@ -150,13 +150,13 @@ async fn get_tasks(
     actix::HttpResponse::Ok().json(tasks)
 }
 
-#[post("/tasks/{user_id}")]
+#[post("/api/tasks/{user_id}")]
 async fn post_task(
     req: actix::HttpRequest,
     create_task: web::Json<CreateTaskInfo>,
     db_pool: web::Data<mysql::MySqlPool>,
 ) -> impl Responder {
-    let user_id: IDType = req.match_info().get("user_id").unwrap().parse().unwrap();
+    let user_id = util::match_param::<IDType>(&req, "user_id");
     let query_string = format!(
         "INSERT INTO tasks (title, user_id) VALUES ('{}', {user_id})",
         create_task.title
@@ -170,14 +170,14 @@ async fn post_task(
     }
 }
 
-#[put("/tasks/{task_id}")]
+#[put("/api/tasks/{task_id}")]
 async fn update_task(
     req: actix::HttpRequest,
     task: web::Json<UpdateTaskInfo>,
     db_pool: web::Data<mysql::MySqlPool>,
 ) -> impl Responder {
     println!("attempting to update task");
-    let task_id: i32 = util::match_param(&req, "task_id");
+    let task_id = util::match_param::<i32>(&req, "task_id");
     let completion_value = task.completion_value;
     let query_string = format!(
         "UPDATE tasks SET completion_value = {completion_value} WHERE id = {task_id}"
@@ -191,18 +191,18 @@ async fn update_task(
     }
 }
 
-#[delete("/tasks/{task_id}")]
+#[delete("/api/tasks/{task_id}")]
 async fn delete_task(
     req: actix::HttpRequest,
     db_pool: web::Data<mysql::MySqlPool>,
 ) -> impl Responder {
-    let task_id: i32 = util::match_param(&req, "task_id");
+    let task_id = util::match_param::<i32>(&req, "task_id");
     let query_string = format!("DELETE from tasks WHERE id = {task_id}");
     match sqlx::query(&query_string).execute(db_pool.get_ref()).await {
         Ok(_) => {
             println!("Deleted task {task_id}!");
             actix::HttpResponse::Ok().finish()
-        },
+        }
         Err(_) => {
             eprintln!("Could not delete task {task_id}");
             actix::HttpResponse::NotFound().finish()
@@ -237,7 +237,7 @@ async fn get_users(
 ) -> impl Responder {
     use header::ContentType;
     use sqlx::Row;
-    let user_id: IDType = req.match_info().get("user_id").unwrap().parse().unwrap();
+    let user_id = util::match_param::<IDType>(&req, "user_id");
     let query_string = format!("SELECT * FROM users WHERE id = {user_id}");
     let result = sqlx::query(&query_string)
         .fetch_one(db_pool.get_ref())
@@ -263,11 +263,20 @@ async fn main() -> io::Result<()> {
     println!("waiting to connect");
     let db_pool = sqlx::MySqlPool::connect_lazy(database_url.as_str())
         .expect("ERROR: Failed to connect to DB");
-    let _ = dbg!(
-        sqlx::query_file!("./sql/create.sql")
-            .execute_many(&db_pool)
-            .await
-    );
+    let sql_creation_script = std::fs::read_to_string("./sql/create.sql").unwrap();
+    for query in sql_creation_script.split(';') {
+        let query = query.trim();
+        if !query.is_empty() {
+            println!("'{query}'");
+            sqlx::query(query).execute(&db_pool).await.unwrap();
+        }
+    }
+    // let _ = dbg!(
+    //     sqlx::query_file!("./sql/create.sql")
+    //         .execute(&db_pool)
+    //         .await
+    // );
+
     println!("connected");
     actix::HttpServer::new(move || {
         // .service(hello)

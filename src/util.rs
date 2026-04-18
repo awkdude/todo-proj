@@ -30,5 +30,7 @@ where
     T: std::str::FromStr,
     <T as std::str::FromStr>::Err: std::fmt::Debug,
 {
-    req.match_info().get(name).unwrap().parse().unwrap()
+    let s = req.match_info().get(name).unwrap();
+    println!("matching '{name}' => {s}");
+    s.parse::<T>().unwrap()
 }

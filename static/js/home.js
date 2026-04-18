@@ -20,13 +20,28 @@ window.addEventListener('resize', function (event) {
 });
 
 // FIXME:
-for (let i = 0; i < 20; ++i) {
-    context.beginPath();
-    context.moveTo(100, 50 * i + 5);
-    context.lineTo(900, 50 * i);
-    context.stroke();
-    context.fillText(`${i}`, 120, 50 * i);
+let offset = 0;
+function render() {
+    const total_minutes = 60 * 24;
+    console.log(`alignment: ${context.textBaseline}`);
+    const width = window.innerWidth;
+    let minutes = 0;
+    offset += 0.001;
+    // context.reset();
+    context.translate(0, offset);
+    context.strokeStyle = 'white';
+    for (let i = 0; minutes < total_minutes; ++i, minutes += 30) {
+        const hour = String(Math.trunc(minutes / 60)).padStart(2, '0');
+        const minute = String(minutes % 60).padStart(2, '0');
+        context.beginPath();
+        context.moveTo(0, 50 * i + 5);
+        context.lineTo(width, 50 * i);
+        context.stroke();
+        context.fillText(`${hour}:${minute}`, 120, 50 * i);
+    }
 }
+
+setInterval(render, (1 / 75.0));
 
 function updateDateTime() {
     // {{{
@@ -65,11 +80,11 @@ updateDateTime();
 let task_item_count = 0;
 
 async function updateTaskList() {
-    const task_list = await fetch(`/tasks/${sessionStorage.id}`).then(
+    const task_list = await fetch(`/api/tasks/${sessionStorage.id}`).then(
         (response) => response.json()
     );
     console.log(task_list);
-    const task_view = document.querySelector('#task-view');
+    const task_view = document.querySelector('#task-elements');
     task_view.replaceChildren();
 
     for (const task of task_list) {
@@ -90,7 +105,7 @@ async function updateTaskList() {
         delete_element.textContent = 'DELETE';
 
         delete_element.addEventListener('click', function (event) {
-            const response = fetch(`/tasks/${task.id}`, {
+            const response = fetch(`/api/tasks/${task.id}`, {
                 method: 'DELETE',
             }).then((response) => {
                 if (response.ok) {
@@ -110,7 +125,7 @@ async function updateTaskList() {
                 );
                 checkbox.checked = !checkbox.checked;
                 console.log('checked!');
-                const response = fetch(`/tasks/${task.id}`, {
+                const response = fetch(`/api/tasks/${task.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -138,7 +153,7 @@ document
         const title = dialog.querySelector('#create-task-title');
         console.log(`Created with title: ${title.value}`);
         const task_data = { title: title.value };
-        const response = await fetch(`/tasks/${sessionStorage.id}`, {
+        const response = await fetch(`/api/tasks/${sessionStorage.id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(task_data),

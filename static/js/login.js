@@ -13,8 +13,6 @@ login_form?.addEventListener('submit', async function (event) {
         credentials: 'include',
         body: JSON.stringify(login_data),
     });
-    // .then((response) => {
-    // });
     const error_element = document.querySelector('#login-error');
     error_element.hidden = response.ok;
     if (response.ok) {
