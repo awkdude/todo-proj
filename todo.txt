@@ -1,0 +1,7 @@
+[ ] Progress bar 
+[ ] Fix updatetasklist
+[ ] Back and forward buttons for daily view 
+[ ] Monthly view
+[ ] Back and forward buttons for monthly view 
+[ ] Weekly view
+[ ] ML
