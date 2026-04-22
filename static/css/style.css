@@ -13,6 +13,12 @@
     margin-right: auto;
 }
 
+#progress {
+    /* --progress-color: red; */
+    text-align: center;
+    width: 80%;
+}
+
 #calendar th {
     width: 36pt;
     font-family: 'fira';
@@ -94,14 +100,28 @@ header {
     font-family: 'fira';
 }
 
-input[type='checkbox'] {
+canvas#grid {
+    z-index: -1;
+}
+
+.taskitem > input[type='checkbox'] {
     color: green;
     width: 36px;
-    height: 36px;
+    height: 75%;
+}
+
+.taskitem {
+    height: 3em;
 }
 
 button#addtask {
     font-size: 12pt;
+}
+
+button.delete-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
 }
 
 .tasklist {

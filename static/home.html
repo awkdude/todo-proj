@@ -14,7 +14,10 @@
         <p id="size"></p>
         <header>
             <h1 id="welcome"></h1>
-            <h2 id="datetime"></h2>
+            <h2 id="datetime">
+                <span id="datetime-intro"></span><span id="date"></span>
+                <span id="time"></span>
+            </h2>
         </header>
         <section>
             <header>
@@ -35,6 +38,7 @@
                         id="daily-view"
                         name="view-type"
                         value="daily"
+                        checked
                     />
                     <label for="daily-view">Daily</label>
                     <input
@@ -52,31 +56,93 @@
                     />
                     <label for="monthly-view">Monthly</label>
                 </div>
-                <button id="prev">&lt;</button>
-                <button id="next">&gt;</button>
+                <div id="demo-input">
+                    <label for="demo-time">For Demo Only: </label
+                    ><input type="datetime-local" id="demo-time" />
+                </div>
             </header>
             <dialog id="create-task-dialog" popover>
                 <form method="dialog">
                     <h2>Create Task</h2>
                     <p>
-                        <label>Name: </label
+                        <label>Title: </label
                         ><input
                             type="text"
                             id="create-task-title"
-                            name="create-task-title"
+                            name="title"
                             placeholder=""
                             required
                             autofocus
                         />
                     </p>
                     <p>
-                        <label>Date &amp; Time: </label
-                        ><input
-                            type="datetime-local"
-                            id="create-task-datetime"
-                            name="create-task-datetime"
-                            required
+                        <label for="create-task-is-range">Is Range?</label>
+                        <input
+                            type="checkbox"
+                            id="create-task-is-range"
+                            name="is_range"
                         />
+                    </p>
+                    <p id="show-if-range" hidden>
+                        <label for="create-task-range-max">Max value: </label>
+                        <input
+                            type="number"
+                            value="1"
+                            min="2"
+                            id="create-task-range-max"
+                            name="range_max"
+                        />units
+                    </p>
+                    <p>
+                        <label>Frequency</label>
+                        <select id="frequency-select">
+                            <option value="none-opt" selected>None</option>
+                            <option value="daily-opt">Everyday</option>
+                            <option value="weekly-opt">Weekly</option>
+                        </select>
+                    </p>
+                    <div id="show-if-weekly" hidden>
+                        <p>
+                            <input type="checkbox" id="day-sun" />
+                            <label for="day-sun">Sunday</label>
+                        </p>
+                        <p>
+                            <input type="checkbox" id="day-mon" />
+                            <label for="day-mon">Monday</label>
+                        </p>
+                        <p>
+                            <input type="checkbox" id="day-tue" />
+                            <label for="day-tue">Tuesday</label>
+                        </p>
+                        <p>
+                            <input type="checkbox" id="day-wed" />
+                            <label for="day-wed">Wednesday</label>
+                        </p>
+                        <p>
+                            <input type="checkbox" id="day-thu" />
+                            <label for="day-thu">Thursday</label>
+                        </p>
+                        <p>
+                            <input type="checkbox" id="day-fri" />
+                            <label for="day-fri">Friday</label>
+                        </p>
+                        <p>
+                            <input type="checkbox" id="day-sat" />
+                            <label for="day-sat">Saturday</label>
+                        </p>
+                    </div>
+                    <p>
+                        <!-- TODO:  -->
+                    </p>
+                    <p>
+                        <label>Date: </label
+                        ><input type="date" id="create-task-date" name="date" />
+                        <button id="clear-date"></button>
+                    </p>
+                    <p>
+                        <label>Time: </label
+                        ><input type="time" id="create-task-time" name="time" />
+                        <button id="clear-time"></button>
                     </p>
                 </form>
                 <button
@@ -97,9 +163,20 @@
                 </button>
             </dialog>
             <main id="task-view">
-                <canvas id="grid" width="900" height="1000"></canvas>
-                <section id="task-elements">
-                </section>
+                <label id="progress-label" for="progress"></label>
+                <br />
+                <meter
+                    id="progress"
+                    min="0"
+                    max="100"
+                    low="33"
+                    high="66"
+                    optimum="80"
+                    value="50"
+                ></meter>
+                <div id="task-elements">
+                    <!-- style="overflow: scroll; height: 6in;" -->
+                </div>
             </main>
         </section>
     </body>

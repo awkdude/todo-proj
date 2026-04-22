@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS recurring_task;
+DROP TABLE IF EXISTS task;

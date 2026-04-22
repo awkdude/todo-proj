@@ -1,5 +1,6 @@
 use actix::{Responder, delete, get, http::header, post, put, web};
 use actix_web as actix;
+use std::collections::HashMap;
 use std::fs;
 
 const APP_TITLE: &str = "Productivity Tracker";
@@ -33,4 +34,15 @@ where
     let s = req.match_info().get(name).unwrap();
     println!("matching '{name}' => {s}");
     s.parse::<T>().unwrap()
+}
+
+pub fn get_request_queries(req: &actix::HttpRequest) -> HashMap<&str, &str> {
+    let mut queries = HashMap::new();
+    for q in req.query_string().split('&') {
+        let mut iter = q.split('=');
+        if let Some(name) = iter.next() && let Some(value) = iter.next() {
+            queries.insert(name, value);
+        }
+    }
+    queries
 }
