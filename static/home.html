@@ -11,6 +11,8 @@
         <script defer type="module" src="js/home.js"></script>
     </head>
     <body>
+        <a id="logout" href="/">Log out</a>
+        <a id="rec-link" href="/rec">Manage recurring tasks</a>
         <p id="size"></p>
         <header>
             <h1 id="welcome"></h1>
@@ -41,13 +43,13 @@
                         checked
                     />
                     <label for="daily-view">Daily</label>
-                    <input
-                        type="radio"
-                        id="weekly-view"
-                        name="view-type"
-                        value="weekly"
-                    />
-                    <label for="weekly-view">Weekly</label>
+                    <!-- <input -->
+                    <!--     type="radio" -->
+                    <!--     id="weekly-view" -->
+                    <!--     name="view-type" -->
+                    <!--     value="weekly" -->
+                    <!-- /> -->
+                    <!-- <label for="weekly-view">Weekly</label> -->
                     <input
                         type="radio"
                         id="monthly-view"
@@ -87,7 +89,7 @@
                         <label for="create-task-range-max">Max value: </label>
                         <input
                             type="number"
-                            value="1"
+                            value="2"
                             min="2"
                             id="create-task-range-max"
                             name="range_max"
@@ -144,6 +146,15 @@
                         ><input type="time" id="create-task-time" name="time" />
                         <button id="clear-time"></button>
                     </p>
+                    <p>
+                        <label>End Date: </label
+                        ><input type="date" id="create-task-end-date" name="end-date" disabled />
+                        <button id="clear-end-date"></button>
+                    </p>
+                    <div>
+                        <textarea id="description" rows="4" cols="50" placeholder="Task description here...">
+                        </textarea>
+                    </div>
                 </form>
                 <button
                     id="submit-creation"
@@ -163,6 +174,7 @@
                 </button>
             </dialog>
             <main id="task-view">
+                <div id="progress-stats">
                 <label id="progress-label" for="progress"></label>
                 <br />
                 <meter
@@ -174,6 +186,7 @@
                     optimum="80"
                     value="50"
                 ></meter>
+                </div>
                 <div id="task-elements">
                     <!-- style="overflow: scroll; height: 6in;" -->
                 </div>

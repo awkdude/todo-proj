@@ -1,7 +1,8 @@
-[ ] Progress bar 
-[ ] Fix updatetasklist
+[x] Progress bar 
+[x] Fix updatetasklist
+[x] populate recurring tasks
+[ ] 
 [ ] Back and forward buttons for daily view 
 [ ] Monthly view
 [ ] Back and forward buttons for monthly view 
-[ ] Weekly view
 [ ] ML

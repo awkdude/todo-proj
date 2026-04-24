@@ -4,7 +4,8 @@ export function createTaskElement(task) {
     // {{{
     const newid = task.id;
     let new_task_item = document.createElement('div');
-    new_task_item.className = 'taskitem';
+    new_task_item.classList.add('taskitem');
+    // new_task_item.classList.add('disabled');
     new_task_item.id = `t${newid}`;
     let input_element = document.createElement('input');
     if (!task.is_range) {
@@ -72,19 +73,22 @@ export function createTaskElement(task) {
         }).then((response) => {
             if (response.ok) {
                 console.log(`${task.title} deleted!`);
+                const task_element = document.querySelector(`#t${newid}`);
+                task_element.remove();
             } else {
                 console.error(`${task.title} NOT deleted!`);
             }
         });
         event.preventDefault();
-        const task_element = document.querySelector(`#t${newid}`);
-        task_element.remove();
     });
     // FIXME: Only works when clicking outside checkbox
-    if (task.due_date != null) {
+    if (task.due_date !== null) {
         // TODO: add time
     }
-    new_task_item.append(input_element, label_element, delete_element);
+    const tooltip = document.createElement('div');
+    tooltip.innerHTML = `<span class="tooltiptext">${task.description}</span>`;
+    tooltip.classList.add('tooltip');
+    new_task_item.append(input_element, label_element, delete_element, tooltip);
     const task_view = document.querySelector('#task-elements');
     task_view.append(new_task_item);
     console.log(`${task.title} added`);

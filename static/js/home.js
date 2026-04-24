@@ -1,30 +1,81 @@
 import {
     clampNumber,
     BURST_ICON_SVG,
+    POWER_ICON_SVG,
+    APP_NAME,
     dateTimeFromJSDate,
     getJSDate,
 } from '/js/util.js';
 
 import { createTaskElement } from '/js/task.js';
 
+const logout = document.querySelector('#logout');
+logout.innerHTML += POWER_ICON_SVG;
 console.log(`User Info: ${JSON.stringify(sessionStorage)}`);
 if (!sessionStorage.id) {
-    alert('No session for a user!');
     window.location.href = '/';
 }
+const page_title = document.querySelector('title');
+page_title.text = `${APP_NAME} | ${sessionStorage.username}`;
+fetch(`/api/users/${sessionStorage.id}`).then((response) => {
+    if (!response.ok) {
+        // Goto home screen if user id doesn't exist
+        window.location.href = '/';
+    }
+});
+
+setTimeout(() => {
+    // TODO:
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+            .register('/js/service_worker.js')
+            .then((registration) => {
+                let serviceWorker;
+                if (registration.installing) {
+                    serviceWorker = registration.installing;
+                    console.log('installing');
+                } else if (registration.waiting) {
+                    serviceWorker = registration.waiting;
+                    console.log('waiting');
+                } else if (registration.active) {
+                    serviceWorker = registration.active;
+                    console.log('active');
+                }
+                if (serviceWorker) {
+                    // logState(serviceWorker.state);
+                    serviceWorker.addEventListener('statechange', (e) => {
+                        // logState(e.target.state);
+                    });
+                }
+            })
+            .catch((error) => {
+                consle.log(`Error registering service worker: ${e.toString()}`);
+            });
+    }
+}, 1000);
+
+const demo_time_input = document.querySelector('#demo-time');
+demo_time_input.value = sessionStorage.demo_time ?? '';
+demo_time_input.addEventListener('change', (event) => {
+    console.log(`Date changed to ${demo_time_input.value}`);
+    sessionStorage.demo_time = demo_time_input.value;
+    updateTaskList();
+});
 
 updateTaskList();
 
 const welcome = document.querySelector('#welcome');
-welcome.textContent = `Welcome, ${sessionStorage.fullname}`;
+welcome.textContent = `Welcome, ${sessionStorage.fullname} (@${sessionStorage.username})`;
 const clear_date = document.querySelector('#clear-date');
 const clear_time = document.querySelector('#clear-time');
-clear_date.innerHTML = clear_time.innerHTML = BURST_ICON_SVG;
+const clear_end_date = document.querySelector('#clear-end-date');
+clear_date.innerHTML = clear_time.innerHTML = clear_end_date.innerHTML = BURST_ICON_SVG;
 const date_element = document.querySelector('#create-task-date');
 const time_element = document.querySelector('#create-task-time');
+const end_date_element = document.querySelector('#create-task-end-date');
 let date_time = dateTimeFromJSDate(getJSDate());
 console.log(`${JSON.stringify(date_time)}`);
-date_element.min = date_time.date;
+date_element.min = end_date_element.min = date_time.date;
 time_element.min = date_time.time;
 
 clear_date.addEventListener('click', (event) => {
@@ -35,6 +86,10 @@ clear_date.addEventListener('click', (event) => {
 clear_time.addEventListener('click', (event) => {
     const time_input = document.querySelector('#create-task-time');
     time_input.value = '';
+});
+clear_end_date.addEventListener('click', (event) => {
+    const end_date_input = document.querySelector('#create-task-end-date');
+    end_date_input.value = '';
 });
 
 // update time & date {{{
@@ -95,9 +150,10 @@ let task_item_count = 0;
 
 async function updateTaskList() {
     // {{{
-    const task_list = await fetch(`/api/tasks/${sessionStorage.id}?date=134&time=men`).then(
-        (response) => response.json()
-    );
+    let date_time = dateTimeFromJSDate(getJSDate());
+    let url = `/api/tasks/${sessionStorage.id}/${date_time.date}`;
+    console.log(url);
+    const task_list = await fetch(url).then((response) => response.json());
     console.log(`Tasks: ${JSON.stringify(task_list)}`);
     console.log(task_list);
     const task_view = document.querySelector('#task-elements');
@@ -112,28 +168,40 @@ async function updateTaskList() {
     // }}}
 }
 setInterval(() => {
+    let date_time = dateTimeFromJSDate(getJSDate());
     const progress_bar = document.querySelector('#progress');
-    fetch(`/api/progress/${sessionStorage.id}`);
-    const value = Math.sin((2.0 * Math.PI * window.performance.now()) / 1000);
-    progress_bar.value = value * 50 + 50;
+    let url = `/api/progress/${sessionStorage.id}/${date_time.date}`;
+    fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+            const v =
+                data.max_value > 0 ? (data.value / data.max_value) * 100 : 0;
+            console.log(v);
+            progress_bar.value = v;
+        });
 }, 500);
 
 document
     .querySelector('#submit-creation')
     ?.addEventListener('click', async function (event) {
         // {{{
+        let date_time = dateTimeFromJSDate(getJSDate());
         const dialog = document.querySelector('#create-task-dialog');
         const title = dialog.querySelector('#create-task-title');
         const date_input = document.querySelector('#create-task-date');
         const time_input = document.querySelector('#create-task-time');
+        const end_date_input = document.querySelector('#create-task-end-date');
+        const description_input = document.querySelector('#description');
         console.log(
-            `Date input: ${date_input.value}\nTime input: ${time_input.value}`
+            `Date input: ${date_input.value}\nTime input: ${time_input.value}\nEnd date input: ${end_date_input.value}`
         );
         let task_data = {
             title: title.value,
             user_id: sessionStorage.id,
-            date: date_input.value,
+            date: date_input.value || date_time.date,
             time: time_input.value,
+            end_date: !end_date_input.disabled ? end_date_input.value : '',
+            description: description.value.trim()
         };
         task_data.frequency_type = 0;
         const frequency_select = document.querySelector('#frequency-select');
@@ -191,27 +259,8 @@ frequency_select?.addEventListener('change', (event) => {
     const weekly_input = document.querySelector('#show-if-weekly');
     weekly_input.hidden =
         frequency_select.value === 'weekly-opt' ? '' : 'hidden';
+    const end_date_input = document.querySelector('#create-task-end-date');
+    end_date_input.disabled = frequency_select.value === 'none-opt';
+    
 });
 
-const demo_time_input = document.querySelector('#demo-time');
-demo_time_input.value = sessionStorage.demo_time ?? '';
-demo_time_input.addEventListener('change', (event) => {
-    console.log(`Date changed to ${demo_time_input.value}`);
-    sessionStorage.demo_time = demo_time_input.value;
-    updateTaskList();
-});
-
-// FIXME: Check if in demo mode
-fetch('/api/demo')
-    .then((response) => {
-        sessionStorage.demo_mode = response.ok ? 'true' : 'false';
-        console.log('Demo mode: ' + sessionStorage.demo_mode);
-        if (sessionStorage.demo_mode === 'true') {
-            console.log(sessionstorage.demo_mode);
-            const demo_buttons = document.querySelector('#demo-input');
-            demo_buttons.hidden = '';
-        }
-    })
-    .catch((e) => {
-        sessionStorage.demo_mode = false;
-    });

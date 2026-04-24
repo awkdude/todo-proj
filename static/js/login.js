@@ -1,6 +1,5 @@
 import { setUserSessionInfo } from '/js/util.js';
 
-console.log(`Cookies on load: ${document.cookie}`);
 const login_form = document.querySelector('form#login');
 
 login_form?.addEventListener('submit', async function (event) {
@@ -23,3 +22,5 @@ login_form?.addEventListener('submit', async function (event) {
     }
     console.log(response.ok ? 'OK' : 'NO');
 });
+
+setUserSessionInfo(null);

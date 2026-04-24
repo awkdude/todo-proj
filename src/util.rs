@@ -26,21 +26,50 @@ pub fn hash_string(s: &str) -> u64 {
     hasher.finish()
 }
 
-pub fn match_param<T>(req: &actix::HttpRequest, name: &str) -> T
+#[derive(Debug)]
+pub enum MatchParamError {
+    Get,
+    Parse,
+}
+
+pub fn match_param<T>(req: &actix::HttpRequest, name: &str) -> Result<T, MatchParamError>
 where
     T: std::str::FromStr,
     <T as std::str::FromStr>::Err: std::fmt::Debug,
 {
-    let s = req.match_info().get(name).unwrap();
-    println!("matching '{name}' => {s}");
-    s.parse::<T>().unwrap()
+    let s = req.match_info().get(name).ok_or(MatchParamError::Get)?;
+    // println!("matching '{name}' => {s}");
+    s.parse::<T>().map_err(|_| MatchParamError::Parse)
 }
 
-pub fn get_request_queries(req: &actix::HttpRequest) -> HashMap<&str, &str> {
+#[derive(Clone, Copy)]
+pub struct Date {
+    pub year: i32,
+    pub month: i32,
+    pub day: i32,
+}
+
+impl std::fmt::Display for Date {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "{:02}-{:02}-{:02}", self.year, self.month, self.day)
+    }
+}
+
+pub fn parse_date(s: &str) -> Option<Date> {
+    let mut iter = s.split('-');
+    let year = iter.next()?.parse::<i32>().ok()?;
+    let month = iter.next()?.parse::<i32>().ok()?;
+    let day = iter.next()?.parse::<i32>().ok()?;
+    Some(Date { year, month, day })
+}
+
+pub fn get_uri_queries(req: &actix::HttpRequest) -> HashMap<&str, &str> {
     let mut queries = HashMap::new();
     for q in req.query_string().split('&') {
         let mut iter = q.split('=');
-        if let Some(name) = iter.next() && let Some(value) = iter.next() {
+        if let Some(name) = iter.next()
+            && let Some(value) = iter.next()
+        {
             queries.insert(name, value);
         }
     }

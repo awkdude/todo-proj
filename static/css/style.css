@@ -6,6 +6,21 @@
     font-family: 'fira';
     src: url('/assets/FiraSans-Book.ttf');
 }
+fieldset div {
+    text-align: center;
+    margin: 0.4in;
+}
+body {
+    font-family: 'consolas';
+}
+
+main {
+    border: 1px solid black;
+}
+
+form {
+    font-family: 'arial';
+}
 
 #calendar {
     width: 50%;
@@ -16,7 +31,17 @@
 #progress {
     /* --progress-color: red; */
     text-align: center;
-    width: 80%;
+    width: 40%;
+    height: 4em;
+}
+
+#progress-stats {
+    text-align: center;
+    border-top: 2px grey solid;
+}
+
+#progress-label {
+    margin 0px;
 }
 
 #calendar th {
@@ -80,7 +105,7 @@ input:is([type='text'], [type='email'], [type='password']):focus {
 }
 
 dialog#create-task-dialog {
-    width: 75%;
+    width: 50%;
     height: 75%;
     text-align: center;
     vertical-align: middle;
@@ -124,6 +149,15 @@ button.delete-button {
     cursor: pointer;
 }
 
+button.delete-button2 {
+    background-color: transparent;
+    border: 2px solid red;
+    color: red;
+    cursor: pointer;
+    float: right;
+    height: 60%;
+}
+
 .tasklist {
     display: flex;
     align-items: center;
@@ -136,9 +170,55 @@ button.delete-button {
     margin-bottom: 4px;
 }
 
+.disabled {
+    background-color: #f0f0f0;
+}
+
 .tasklabel {
     vertical-align: middle;
-    font-family: 'Fira Mono';
+    font-family: 'fira';
     font-weight: bold;
     color: red;
+}
+
+.proto-task-item {
+    background-color: grey;
+
+    padding: 0em;
+    margin: 1em;
+}
+
+.rec-label {
+    width: 33%;
+    margin-left: 2em;
+    margin-right: 2em;
+    text-align: center;
+    opacity: 1;
+}
+
+a {
+    font-size: 8pt;
+}
+
+#rec-link {
+    float: right;
+}
+
+.tooltip {
+    position: relative;
+    /* display: inline-block; */
+}
+
+.tooltiptext {
+    visibility: hidden;
+    width: 2in;
+    background-color: blue;
+    color: white;
+    padding 5px 0;
+    z-index: 2;
+    /* position: absolute; */
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
 }

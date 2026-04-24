@@ -13,13 +13,22 @@ test_button?.addEventListener('click', (event) => {
 });
 const MINIMUM_PASSWORD_LENGTH = 4;
 const form = document.querySelector('form');
+let password_element = document.querySelector('#password');
+let confirm_password_element = document.querySelector('#confirm-password');
+
 form?.addEventListener('submit', async function (event) {
     event.preventDefault();
+    const error_element = document.querySelector('#login-error');
     console.log(`Action: ${event.target.action}`);
     const form_data = new FormData(form); // event.target);
     const register_data = Object.fromEntries(form_data.entries());
     for (let [k, v] of form_data.entries()) {
         console.log(`Form data: ${k}: ${v}`);
+    }
+    if (password_element.value !== confirm_password_element.value) {
+        error_element.textContent = "Password doesn't match!";
+        error_element.hidden = '';
+        return;
     }
     let response = fetch(event.target.action, {
         method: 'POST', // event.target.method,
@@ -30,9 +39,19 @@ form?.addEventListener('submit', async function (event) {
             if (response.ok) {
                 console.log('User created!');
                 const data = await response.json();
+                alert(`Registered user id: ${data.user_id}`);
                 setUserSessionInfo(data.user_id);
                 window.location.href = data.redirect;
             } else {
+                if (response.status === 406) {
+                    response.text().then((text) => {
+                        error_element.textContent = text;
+                        error_element.hidden = '';
+                    });
+                } else {
+                    error_element.textContent = 'Username already exists!';
+                    error_element.hidden = '';
+                }
                 console.error('ERROR');
             }
         })
@@ -41,8 +60,6 @@ form?.addEventListener('submit', async function (event) {
         });
     let stuff_element = document.querySelector('p#stuff');
 });
-let password_element = document.querySelector('#password');
-let confirm_password_element = document.querySelector('#confirm-password');
 // FIXME:
 password_element.minLength = MINIMUM_PASSWORD_LENGTH;
 password_element.addEventListener('input', (event) => {
