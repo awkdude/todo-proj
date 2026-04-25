@@ -69,7 +69,10 @@ welcome.textContent = `Welcome, ${sessionStorage.fullname} (@${sessionStorage.us
 const clear_date = document.querySelector('#clear-date');
 const clear_time = document.querySelector('#clear-time');
 const clear_end_date = document.querySelector('#clear-end-date');
-clear_date.innerHTML = clear_time.innerHTML = clear_end_date.innerHTML = BURST_ICON_SVG;
+clear_date.innerHTML =
+    clear_time.innerHTML =
+    clear_end_date.innerHTML =
+        BURST_ICON_SVG;
 const date_element = document.querySelector('#create-task-date');
 const time_element = document.querySelector('#create-task-time');
 const end_date_element = document.querySelector('#create-task-end-date');
@@ -125,7 +128,6 @@ function updateDateTime() {
         datetime_intro.textContent = `Today is ${DAY_NAMES[now.getDay()]}, `;
         date.textContent = formatted_date;
         time.textContent = formatted_time;
-        // datetime.innerHTML = `<span id="datetime-intro">Today is</span> ${DAY_NAMES[now.getDay()]}, <span id="date">${formatted_date}</span> <span id="time">${formatted_time}</span>`;
     }
 }
 updateDateTime();
@@ -201,7 +203,7 @@ document
             date: date_input.value || date_time.date,
             time: time_input.value,
             end_date: !end_date_input.disabled ? end_date_input.value : '',
-            description: description.value.trim()
+            description: description.value.trim(),
         };
         task_data.frequency_type = 0;
         const frequency_select = document.querySelector('#frequency-select');
@@ -232,18 +234,16 @@ document
         }
         console.log(`Task data: ${JSON.stringify(task_data)}`);
 
-        if (true) {
-            const response = await fetch(`/api/tasks/${sessionStorage.id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(task_data),
-            });
-            if (response.ok) {
-                console.log('Posted task!');
-                updateTaskList();
-            } else {
-                console.error('Could not create task!');
-            }
+        const response = await fetch(`/api/tasks/${sessionStorage.id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(task_data),
+        });
+        if (response.ok) {
+            console.log('Posted task!');
+            updateTaskList();
+        } else {
+            console.error('Could not create task!');
         }
         // }}}
     });
@@ -261,6 +261,4 @@ frequency_select?.addEventListener('change', (event) => {
         frequency_select.value === 'weekly-opt' ? '' : 'hidden';
     const end_date_input = document.querySelector('#create-task-end-date');
     end_date_input.disabled = frequency_select.value === 'none-opt';
-    
 });
-

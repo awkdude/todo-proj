@@ -7,15 +7,34 @@
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <link rel="stylesheet" href="css/style.css" />
         <link rel="stylesheet" id="theme" />
+        <script defer type="module" src="/js/script.js"></script>
+        <script defer type="module" src="/js/history.js"></script>
     </head>
     <body>
         <h1>$TITLE$</h1>
-        <script defer type="module" src="js/script.js"></script>
-        <script defer type="module" src="js/history.js"></script>
         <section>
+            <div id="view-switch">
+                View:
+                <a href="/home">Daily</a>
+                <a href="/history">Monthly</a>
+            </div>
+            <input type="month" id="month-select" />
             <header>
-                <h2>January</h2>
+                <h2 id="month-name">January</h2>
             </header>
+            <div id="progress-stats">
+                <label id="progress-label" for="progress"></label>
+                <br />
+                <meter
+                    id="progress"
+                    min="0"
+                    max="100"
+                    low="33"
+                    high="66"
+                    optimum="80"
+                    value="50"
+                ></meter>
+            </div>
             <table id="calendar">
                 <thead>
                     <tr>
@@ -32,17 +51,5 @@
             </table>
         </section>
         <p id="dd"></p>
-        <script type="module">
-            let calendar_body = document.querySelector('#calendar-body');
-            for (let y = 0; y < 5; ++y) {
-                let row = document.createElement('tr');
-                for (let x = 0; x < 7; ++x) {
-                    let cell = document.createElement('td');
-                    cell.className = 'day-cell';
-                    row.append(cell);
-                }
-                calendar_body.append(row);
-            }
-        </script>
     </body>
 </html>

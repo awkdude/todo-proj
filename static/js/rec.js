@@ -16,14 +16,14 @@ fetch(`/api/proto_tasks/${sessionStorage.id}`)
             switch (proto_task.frequency_type) {
                 case 0: {
                     freq_label.textContent = proto_task.due_date;
-                    if(proto_task.end_date) {
+                    if (proto_task.end_date) {
                         freq_label.textContent += ` to ${proto_task.end_date}`;
                     }
                     break;
                 }
                 case 1: {
                     let inner_dates = proto_task.due_date;
-                    if(proto_task.end_date) {
+                    if (proto_task.end_date) {
                         inner_dates += ` to ${proto_task.end_date}`;
                     }
                     freq_label.textContent = `Everyday (${inner_dates})`;
@@ -67,7 +67,14 @@ fetch(`/api/proto_tasks/${sessionStorage.id}`)
                         console.error(err.toString());
                     });
             });
+            console.log(`${JSON.stringify(proto_task)}`);
             proto_task_element.append(title_label, freq_label, delete_button);
+            if (proto_task.due_time) {
+                const time_label = document.createElement('label');
+                time_label.classList.add('rec-label');
+                time_label.textContent = proto_task.due_time;
+                proto_task_element.append(time_label);
+            }
             container_element.append(proto_task_element);
         }
     });

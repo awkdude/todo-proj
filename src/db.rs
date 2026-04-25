@@ -1,6 +1,7 @@
 use crate::util::Date;
 use chrono::Datelike;
 use sqlx::{MySqlPool, Row, mysql::MySqlQueryResult};
+use sqlx::mysql::types::MySqlTime;
 
 #[derive(Debug, Clone, Copy)]
 enum Frequency {
@@ -17,6 +18,14 @@ impl Frequency {
             2 => Self::Weekly(value),
             _ => panic!("Invalid frequency!"),
         }
+    }
+}
+
+pub fn convert_time(stime: sqlx::Result<MySqlTime>) -> String {
+    if let Ok(stime) = stime {
+        format!("{:02}:{:02}", stime.hours(), stime.minutes())
+    } else {
+        "".to_string()
     }
 }
 
@@ -81,7 +90,7 @@ pub async fn populate_recurring_tasks(
 ) -> sqlx::Result<()> {
     let date_str = date.to_string();
     let sql_query = format!(
-        "SELECT * FROM recurring_task WHERE user_id = {user_id} AND start_date <= '{date_str}' AND end_date >= {date_str}"
+        "SELECT * FROM recurring_task WHERE user_id = {user_id} AND start_date <= '{date_str}' AND end_date >= '{date_str}'"
     );
 
     let result = sqlx::query(&sql_query).fetch_all(db_pool).await?;
@@ -95,9 +104,8 @@ pub async fn populate_recurring_tasks(
         let proto_id = row.get::<i32, &str>("proto_id");
         let start_date = row.get::<chrono::NaiveDate, &str>("start_date");
         let start_date = start_date.format("%Y-%m-%d").to_string();
-        let due_time = row
-            .try_get::<String, &str>("due_time")
-            .unwrap_or("".to_string());
+        let due_time = convert_time(row
+            .try_get::<MySqlTime, &str>("due_time"));
         let frequency = Frequency::from(frequency_type, frequency_value);
         println!("{title}: {frequency:?} due today");
 

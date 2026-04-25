@@ -19,13 +19,24 @@ main {
 }
 
 form {
+    text-align: center;
     font-family: 'arial';
 }
 
 #calendar {
+    margin-top: 4em;
     width: 50%;
     margin-left: auto;
     margin-right: auto;
+}
+
+.day-cell {
+    color: black;
+}
+
+#view-switch {
+    text-align: center;
+    height: 4em;
 }
 
 #progress {
@@ -41,7 +52,7 @@ form {
 }
 
 #progress-label {
-    margin 0px;
+    margin: 0px;
 }
 
 #calendar th {
@@ -135,8 +146,16 @@ canvas#grid {
     height: 75%;
 }
 
-.taskitem {
-    height: 3em;
+.tasklabel {
+    vertical-align: middle;
+    font-family: 'fira';
+    font-weight: bold;
+}
+
+.task-status {
+    margin-right: 1in;
+    text-decoration: underline;
+    opacity: 1;
 }
 
 button#addtask {
@@ -164,26 +183,27 @@ button.delete-button2 {
 }
 
 .taskitem {
+    position: relative;
+    display: block;
+    padding: 0;
+    height: 3em;
     border: 4px solid black;
-    background-color: #a0d0ff;
+    background-color: #00d0ff;
     border-radius: 10px;
     margin-bottom: 4px;
+}
+
+.taskitem + .late {
+    opacity: 0.5;
+    border-width: 1px;
 }
 
 .disabled {
     background-color: #f0f0f0;
 }
 
-.tasklabel {
-    vertical-align: middle;
-    font-family: 'fira';
-    font-weight: bold;
-    color: red;
-}
-
 .proto-task-item {
-    background-color: grey;
-
+    background-color: #e0e0e0;
     padding: 0em;
     margin: 1em;
 }
@@ -210,15 +230,29 @@ a {
 }
 
 .tooltiptext {
+    position: absolute;
+    left: 30%;
+    top: 5%;
     visibility: hidden;
-    width: 2in;
     background-color: blue;
     color: white;
-    padding 5px 0;
+    padding: 5px 0;
     z-index: 2;
     /* position: absolute; */
 }
 
-.tooltip:hover .tooltiptext {
+.taskitem:hover .tooltiptext {
     visibility: visible;
+}
+
+.day-cell-exist {
+    cursor: pointer;
+}
+
+#month-name {
+    text-decoration: underline;
+}
+
+textarea {
+    resize: none;
 }

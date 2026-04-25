@@ -1,3 +1,5 @@
+export function getSetDate() {}
+
 export async function setUserSessionInfo(user_id) {
     if (user_id === null) {
         sessionStorage.id = null;
@@ -26,7 +28,12 @@ export function dateTimeFromJSDate(date_obj) {
     };
 }
 
-export function dateStringFomDate(date_obj) {}
+export function isTaskLate(task) {
+    const now_datetime = dateTimeFromJSDate(getJSDate());
+    const date_time_jsdate = new Date(`${task.date} ${datetime.time} GMT+0:00`);
+    const now_jsdate = getJSDate();
+    return now_jsdate > date_time_jsdate;
+}
 
 export function clampNumber(n, min, max) {
     if (n < min) {

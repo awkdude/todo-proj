@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use actix::{Responder, delete, get, http::header, post, put, web};
 use serde_json::json;
 use sqlx::{MySqlPool, Row, mysql};
+use sqlx::mysql::types::MySqlTime;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -70,6 +71,7 @@ struct TaskInfo {
     pub range_max: i32,
     pub completion_value: i32,
     pub description: String,
+    pub due_time: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -85,6 +87,7 @@ struct PrototypeTask {
     pub day_bits: i32,
     pub due_date: String,
     pub end_date: String,
+    pub due_time: String,
     pub description: String,
 }
 
@@ -222,7 +225,7 @@ async fn get_tasks(
         )
     } else {
         format!(
-            "SELECT t.id, t.proto_id AS proto_id, t.user_id, t.completion_value, t.due_date, t.due_date, t.due_time, p.proto_id, p.title, p.frequency_type, p.frequency_value, p.is_range, p.completion_max, p.description FROM task AS t JOIN recurring_task AS p ON t.proto_id = p.proto_id WHERE (p.user_id = {} AND t.due_date = '{}')",
+            "SELECT t.id, t.proto_id AS proto_id, t.user_id, t.completion_value, t.due_date, t.due_date, t.due_time, p.proto_id, p.title, p.frequency_type, p.frequency_value, p.is_range, p.completion_max, p.description FROM task AS t JOIN recurring_task AS p ON t.proto_id = p.proto_id WHERE (p.user_id = {} AND t.due_date = '{}') ORDER BY t.due_time",
             user_id,
             date
         )
@@ -244,6 +247,7 @@ async fn get_tasks(
                 let is_range = row.get::<bool, &str>("is_range");
                 let completion_max = row.get::<i32, &str>("completion_max");
                 let description = row.get::<String, &str>("description");
+                let due_time = db::convert_time(row.try_get::<MySqlTime, &str>("due_time"));
                 let task = TaskInfo {
                     id,
                     proto_id,
@@ -255,6 +259,7 @@ async fn get_tasks(
                     range_min: 0,
                     range_max: completion_max,
                     description,
+                    due_time,
                 };
                 tasks.push(task.clone());
                 println!("{task:?}");
@@ -450,6 +455,7 @@ async fn get_proto_tasks(
         let end_date = row.get::<chrono::NaiveDate, &str>("end_date");
         let end_date = end_date.format("%Y-%m-%d").to_string();
         let description = row.get::<String, &str>("description");
+        let due_time = db::convert_time(row.try_get::<MySqlTime, &str>("due_time"));
                 let proto_task = PrototypeTask {
                     proto_id,
                     title,
@@ -457,6 +463,7 @@ async fn get_proto_tasks(
                     day_bits,
                     due_date: start_date,
                     end_date,
+                    due_time,
                     description,
                 };
                 proto_tasks.push(proto_task);

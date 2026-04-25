@@ -26,37 +26,13 @@
                 <button id="addtask" popovertarget="create-task-dialog">
                     + Add task
                 </button>
-                <button id="view-history-button">
-                    <svg id="history-icon" width="20" height="20">
-                        <circle class="face" cx="10" cy="10" r="5"></circle>
-                    </svg>
-                    History
+                <button id="settings-button" popovertarget="settings">
+                    Settings
                 </button>
-                <button id="settings-button">Settings</button>
-                <div>
+                <div id="view-switch">
                     View:
-                    <input
-                        type="radio"
-                        id="daily-view"
-                        name="view-type"
-                        value="daily"
-                        checked
-                    />
-                    <label for="daily-view">Daily</label>
-                    <!-- <input -->
-                    <!--     type="radio" -->
-                    <!--     id="weekly-view" -->
-                    <!--     name="view-type" -->
-                    <!--     value="weekly" -->
-                    <!-- /> -->
-                    <!-- <label for="weekly-view">Weekly</label> -->
-                    <input
-                        type="radio"
-                        id="monthly-view"
-                        name="view-type"
-                        value="monthly"
-                    />
-                    <label for="monthly-view">Monthly</label>
+                    <a href="/home">Daily</a>
+                    <a href="/history">Monthly</a>
                 </div>
                 <div id="demo-input">
                     <label for="demo-time">For Demo Only: </label
@@ -72,7 +48,7 @@
                             type="text"
                             id="create-task-title"
                             name="title"
-                            placeholder=""
+                            placeholder="Do homework"
                             required
                             autofocus
                         />
@@ -148,11 +124,21 @@
                     </p>
                     <p>
                         <label>End Date: </label
-                        ><input type="date" id="create-task-end-date" name="end-date" disabled />
+                        ><input
+                            type="date"
+                            id="create-task-end-date"
+                            name="end-date"
+                            disabled
+                        />
                         <button id="clear-end-date"></button>
                     </p>
                     <div>
-                        <textarea id="description" rows="4" cols="50" placeholder="Task description here...">
+                        <textarea
+                            id="description"
+                            rows="4"
+                            cols="50"
+                            placeholder="Task description here..."
+                        >
                         </textarea>
                     </div>
                 </form>
@@ -173,19 +159,30 @@
                     Cancel
                 </button>
             </dialog>
+            <!-- <dialog id="settings" popover> -->
+            <!--     <form method="dialog"> -->
+            <!--         <h2>Settings</h2> -->
+            <!--         <p> -->
+            <!--             <label>Theme: </label> -->
+            <!--             <select id="theme-select"> -->
+            <!--                 <option value="light-opt" selected>Light</option> -->
+            <!--                 <option value="daily-opt">Dark</option> -->
+            <!--             </select> -->
+            <!--         </p> -->
+            <!-- </dialog> -->
             <main id="task-view">
                 <div id="progress-stats">
-                <label id="progress-label" for="progress"></label>
-                <br />
-                <meter
-                    id="progress"
-                    min="0"
-                    max="100"
-                    low="33"
-                    high="66"
-                    optimum="80"
-                    value="50"
-                ></meter>
+                    <label id="progress-label" for="progress"></label>
+                    <br />
+                    <meter
+                        id="progress"
+                        min="0"
+                        max="100"
+                        low="33"
+                        high="66"
+                        optimum="80"
+                        value="50"
+                    ></meter>
                 </div>
                 <div id="task-elements">
                     <!-- style="overflow: scroll; height: 6in;" -->
