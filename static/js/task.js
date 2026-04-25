@@ -10,7 +10,8 @@ export function createTaskElement(task) {
     const task_datetime = { date: task.date, time: task.time };
 
     console.log(task_datetime);
-    if (!isTaskLate(task)) {
+    const too_late = isTaskLate(task);
+    if (!too_late) {
         // create task input elements {{{
         if (!task.is_range) {
             input_element.type = 'checkbox';
@@ -85,6 +86,7 @@ export function createTaskElement(task) {
     delete_element.id = `b${newid}`;
     console.log(Number.parseInt(delete_element.id.substring(1)));
     delete_element.innerHTML = DELETE_ICON_SVG;
+    if(!too_late) {
     delete_element.addEventListener('click', function (event) {
         const response = fetch(`/api/tasks/${task.id}`, {
             method: 'DELETE',
@@ -99,6 +101,9 @@ export function createTaskElement(task) {
         });
         event.preventDefault();
     });
+    } else {
+        delete_element.style.visibility = 'hidden';
+    }
     const due_time_element = document.createElement('span');
     if (task.due_time) {
         console.log(task.due_time);

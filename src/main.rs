@@ -70,6 +70,7 @@ struct TaskInfo {
     pub range_min: i32,
     pub range_max: i32,
     pub completion_value: i32,
+    pub due_date: String,
     pub description: String,
     pub due_time: String,
 }
@@ -247,6 +248,8 @@ async fn get_tasks(
                 let is_range = row.get::<bool, &str>("is_range");
                 let completion_max = row.get::<i32, &str>("completion_max");
                 let description = row.get::<String, &str>("description");
+        let due_date = row.get::<chrono::NaiveDate, &str>("due_date");
+        let due_date = due_date.format("%Y-%m-%d").to_string();
                 let due_time = db::convert_time(row.try_get::<MySqlTime, &str>("due_time"));
                 let task = TaskInfo {
                     id,
@@ -259,6 +262,7 @@ async fn get_tasks(
                     range_min: 0,
                     range_max: completion_max,
                     description,
+                    due_date,
                     due_time,
                 };
                 tasks.push(task.clone());

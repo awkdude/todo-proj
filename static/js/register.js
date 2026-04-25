@@ -39,7 +39,6 @@ form?.addEventListener('submit', async function (event) {
             if (response.ok) {
                 console.log('User created!');
                 const data = await response.json();
-                alert(`Registered user id: ${data.user_id}`);
                 setUserSessionInfo(data.user_id);
                 window.location.href = data.redirect;
             } else {

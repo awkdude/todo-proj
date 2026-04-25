@@ -58,6 +58,8 @@ function renderCalendar() {
                 cell.addEventListener('click', (event) => {
                     console.log(date_str);
                     // TODO: set setDate and goto /home
+                    sessionStorage.setDate = date_str;
+                    window.location = '/home';
                 });
                 fetch(`/api/progress/${sessionStorage.id}/${date_str}`)
                     .then((response) => response.json())

@@ -5,7 +5,6 @@ export async function setUserSessionInfo(user_id) {
         sessionStorage.id = null;
         return;
     }
-    alert(`setting session id to ${user_id}`);
     const user_info = await fetch(`/api/users/${user_id}`).then((response) =>
         response.json()
     );
@@ -30,8 +29,10 @@ export function dateTimeFromJSDate(date_obj) {
 
 export function isTaskLate(task) {
     const now_datetime = dateTimeFromJSDate(getJSDate());
-    const date_time_jsdate = new Date(`${task.date} ${datetime.time} GMT+0:00`);
+    const due_time = task.due_time || '23:59';
+    const date_time_jsdate = new Date(`${task.due_date} ${due_time}`);
     const now_jsdate = getJSDate();
+    console.log(`${now_jsdate} - ${date_time_jsdate}`);
     return now_jsdate > date_time_jsdate;
 }
 
