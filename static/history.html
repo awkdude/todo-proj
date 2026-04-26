@@ -18,6 +18,7 @@
                 <a href="/home">Daily</a>
                 <a href="/history">Monthly</a>
             </div>
+            <label for="month-select">Select Month: </label><br>
             <input type="month" id="month-select" />
             <header>
                 <h2 id="month-name">January</h2>
@@ -51,5 +52,11 @@
             </table>
         </section>
         <p id="dd"></p>
+            <div id="pie-progress">
+            <canvas id="c" width=400 height=400></canvas>
+            <fieldset id="category-list">
+                <legend>Legend</legend>
+            </fieldset>
+        </div>
     </body>
 </html>

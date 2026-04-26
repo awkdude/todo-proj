@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS user (
     username VARCHAR(32) UNIQUE NOT NULL,
     fullname VARCHAR(64) NOT NULL,
     password_hash BIGINT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    opt_notify BOOL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS recurring_task (
@@ -19,7 +20,8 @@ CREATE TABLE IF NOT EXISTS recurring_task (
     is_range BOOL NOT NULL DEFAULT 0,
     completion_min INT DEFAULT 0,
     completion_max INT DEFAULT 1,
-    description VARCHAR(1000)
+    description VARCHAR(1000),
+    category VARCHAR(16) 
 );
 
 CREATE TABLE IF NOT EXISTS task (

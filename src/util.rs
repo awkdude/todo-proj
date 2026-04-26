@@ -55,11 +55,12 @@ impl std::fmt::Display for Date {
     }
 }
 
+// Converts YYYY-MM-dd to Date
 pub fn parse_date(s: &str) -> Option<Date> {
     let mut iter = s.split('-');
     let year = iter.next()?.parse::<i32>().ok()?;
     let month = iter.next()?.parse::<i32>().ok()?;
-    let day = iter.next()?.parse::<i32>().ok()?;
+    let day = iter.next()?.parse::<i32>().unwrap_or(1);
     Some(Date { year, month, day })
 }
 

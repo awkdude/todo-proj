@@ -1,2 +1,4 @@
 target/
 .env
+final_task_model2/
+__pycache__/

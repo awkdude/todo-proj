@@ -1,7 +1,10 @@
+use actix_web as actix;
 use crate::util::Date;
 use chrono::Datelike;
-use sqlx::{MySqlPool, Row, mysql::MySqlQueryResult};
+use serde_json::json;
 use sqlx::mysql::types::MySqlTime;
+use sqlx::{MySqlPool, Row, mysql::MySqlQueryResult};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy)]
 enum Frequency {
@@ -104,8 +107,7 @@ pub async fn populate_recurring_tasks(
         let proto_id = row.get::<i32, &str>("proto_id");
         let start_date = row.get::<chrono::NaiveDate, &str>("start_date");
         let start_date = start_date.format("%Y-%m-%d").to_string();
-        let due_time = convert_time(row
-            .try_get::<MySqlTime, &str>("due_time"));
+        let due_time = convert_time(row.try_get::<MySqlTime, &str>("due_time"));
         let frequency = Frequency::from(frequency_type, frequency_value);
         println!("{title}: {frequency:?} due today");
 
@@ -145,6 +147,35 @@ pub async fn populate_recurring_tasks(
     }
     Ok(())
 }
+
+#[derive(Serialize)]
+pub struct TaskTitle<'a> {
+    title: &'a str,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct ModelResponse {
+    category_index: i32,
+    category_name: String,
+}
+
+pub async fn get_category_from_title(title: &str) -> Result<String, &'static str> {
+        let client = reqwest::Client::new();
+        let res = client
+            .post("http://localhost:8000/predict")
+            .json(&TaskTitle{ title})
+            .send()
+            .await;
+        if let Ok(response) = res {
+            if let Ok(model_data) = response.json::<ModelResponse>().await {
+               Ok(model_data.category_name)
+            } else {
+                Err("Could not parse category name")
+            }
+        } else {
+            Err("Could not get category name")
+        }
+    }
 
 pub async fn execute_sql_file(path: &str, db_pool: MySqlPool) -> bool {
     let sql_creation_script = std::fs::read_to_string(path).unwrap();

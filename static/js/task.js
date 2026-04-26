@@ -1,10 +1,11 @@
-import { DELETE_ICON_SVG, clampNumber, isTaskLate } from '/js/util.js';
+import { DELETE_ICON_SVG, clampNumber, isTaskLate, CATEGORY_COLOR_MAP } from '/js/util.js';
 
 export function createTaskElement(task) {
     // {{{
     const newid = task.id;
     let new_task_item = document.createElement('div');
     new_task_item.classList.add('taskitem');
+    new_task_item.style.backgroundColor = CATEGORY_COLOR_MAP[task.category];
     new_task_item.id = `t${newid}`;
     let input_element = document.createElement('input');
     const task_datetime = { date: task.date, time: task.time };
@@ -86,21 +87,21 @@ export function createTaskElement(task) {
     delete_element.id = `b${newid}`;
     console.log(Number.parseInt(delete_element.id.substring(1)));
     delete_element.innerHTML = DELETE_ICON_SVG;
-    if(!too_late) {
-    delete_element.addEventListener('click', function (event) {
-        const response = fetch(`/api/tasks/${task.id}`, {
-            method: 'DELETE',
-        }).then((response) => {
-            if (response.ok) {
-                console.log(`${task.title} deleted!`);
-                const task_element = document.querySelector(`#t${newid}`);
-                task_element.remove();
-            } else {
-                console.error(`${task.title} NOT deleted!`);
-            }
+    if (!too_late) {
+        delete_element.addEventListener('click', function (event) {
+            const response = fetch(`/api/tasks/${task.id}`, {
+                method: 'DELETE',
+            }).then((response) => {
+                if (response.ok) {
+                    console.log(`${task.title} deleted!`);
+                    const task_element = document.querySelector(`#t${newid}`);
+                    task_element.remove();
+                } else {
+                    console.error(`${task.title} NOT deleted!`);
+                }
+            });
+            event.preventDefault();
         });
-        event.preventDefault();
-    });
     } else {
         delete_element.style.visibility = 'hidden';
     }
@@ -111,8 +112,8 @@ export function createTaskElement(task) {
     }
     new_task_item.append(label_element, delete_element, due_time_element);
     const tooltip = document.createElement('div');
-    if (task.description) {
-        tooltip.innerHTML = `<div class="tooltiptext">Description: ${task.description}</div>`;
+    if (true || task.description) {
+        tooltip.innerHTML = `<div class="tooltiptext">Type: ${task.category}<br>Description: ${task.description}</div>`;
     }
     // tooltip.classList.add('tooltip');
     new_task_item.append(tooltip);

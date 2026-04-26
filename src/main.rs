@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 // FIXME: Import less
 use actix::{Responder, delete, get, http::header, post, put, web};
 use serde_json::json;
-use sqlx::{MySqlPool, Row, mysql};
 use sqlx::mysql::types::MySqlTime;
+use sqlx::{MySqlPool, Row, mysql};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -73,6 +73,7 @@ struct TaskInfo {
     pub due_date: String,
     pub description: String,
     pub due_time: String,
+    pub category: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -90,6 +91,7 @@ struct PrototypeTask {
     pub end_date: String,
     pub due_time: String,
     pub description: String,
+    pub category: String,
 }
 
 #[post("/api/sessions")]
@@ -186,13 +188,11 @@ async fn get_progress(
         (
             format!(
                 "SELECT CAST(COALESCE(SUM(t.completion_value), 0) AS INT) FROM task AS t JOIN recurring_task AS p ON t.proto_id = p.proto_id WHERE (t.user_id = {} AND t.due_date = '{}')",
-                user_id,
-                date
+                user_id, date
             ),
             format!(
                 "SELECT CAST(COALESCE(SUM(p.completion_max), 0) AS INT) FROM task AS t JOIN recurring_task AS p ON t.proto_id = p.proto_id WHERE (t.user_id = {} AND t.due_date = '{}')",
-                user_id,
-                date
+                user_id, date
             ),
         )
     };
@@ -212,7 +212,11 @@ async fn get_tasks(
     req: actix::HttpRequest,
     db_pool: web::Data<mysql::MySqlPool>,
 ) -> impl Responder {
-    let user_id = util::match_param::<i32>(&req, "user_id").unwrap();
+    let user_id = if let Ok(user_id) = util::match_param::<i32>(&req, "user_id") {
+        user_id
+    } else {
+        return actix::HttpResponse::NotFound().finish();
+    };
     let date = util::match_param::<String>(&req, "date").unwrap();
     let date = util::parse_date(&date).unwrap();
     db::populate_recurring_tasks(db_pool.get_ref(), user_id, date)
@@ -221,14 +225,13 @@ async fn get_tasks(
     println!("DATE: {}", date);
     let sql_query = if date.day == 0 {
         format!(
-            "SELECT t.id, t.proto_id AS proto_id, t.user_id, t.completion_value, t.due_date, t.due_date, t.due_time, p.proto_id, p.title, p.frequency_type, p.frequency_value, p.is_range, p.completion_max, p.description FROM task AS t JOIN recurring_task AS p ON t.proto_id = p.proto_id WHERE (p.user_id = {} AND MONTH(t.due_date) = {} AND YEAR(t.due_date) = {})",
+            "SELECT t.id, t.proto_id AS proto_id, t.user_id, t.completion_value, t.due_date, t.due_date, t.due_time, p.proto_id, p.title, p.frequency_type, p.frequency_value, p.is_range, p.completion_max, p.description, p.category FROM task AS t JOIN recurring_task AS p ON t.proto_id = p.proto_id WHERE (p.user_id = {} AND MONTH(t.due_date) = {} AND YEAR(t.due_date) = {})",
             user_id, date.month, date.year,
         )
     } else {
         format!(
-            "SELECT t.id, t.proto_id AS proto_id, t.user_id, t.completion_value, t.due_date, t.due_date, t.due_time, p.proto_id, p.title, p.frequency_type, p.frequency_value, p.is_range, p.completion_max, p.description FROM task AS t JOIN recurring_task AS p ON t.proto_id = p.proto_id WHERE (p.user_id = {} AND t.due_date = '{}') ORDER BY t.due_time",
-            user_id,
-            date
+            "SELECT t.id, t.proto_id AS proto_id, t.user_id, t.completion_value, t.due_date, t.due_date, t.due_time, p.proto_id, p.title, p.frequency_type, p.frequency_value, p.is_range, p.completion_max, p.description, p.category FROM task AS t JOIN recurring_task AS p ON t.proto_id = p.proto_id WHERE (p.user_id = {} AND t.due_date = '{}') ORDER BY t.due_time",
+            user_id, date
         )
     };
     println!("Query used: {sql_query}");
@@ -248,9 +251,11 @@ async fn get_tasks(
                 let is_range = row.get::<bool, &str>("is_range");
                 let completion_max = row.get::<i32, &str>("completion_max");
                 let description = row.get::<String, &str>("description");
-        let due_date = row.get::<chrono::NaiveDate, &str>("due_date");
-        let due_date = due_date.format("%Y-%m-%d").to_string();
-                let due_time = db::convert_time(row.try_get::<MySqlTime, &str>("due_time"));
+                let due_date = row.get::<chrono::NaiveDate, &str>("due_date");
+                let due_date = due_date.format("%Y-%m-%d").to_string();
+                let category = row.get::<String, &str>("category");
+                let due_time =
+                    db::convert_time(row.try_get::<MySqlTime, &str>("due_time"));
                 let task = TaskInfo {
                     id,
                     proto_id,
@@ -264,6 +269,7 @@ async fn get_tasks(
                     description,
                     due_date,
                     due_time,
+                    category,
                 };
                 tasks.push(task.clone());
                 println!("{task:?}");
@@ -285,8 +291,9 @@ async fn post_task(
     if !create_task.is_range {
         create_task.range_max = 1;
     }
+    let category = db::get_category_from_title(&create_task.title).await.unwrap();
     let sql_query = format!(
-        "INSERT INTO recurring_task (title, frequency_type, frequency_value, user_id, is_range, completion_max, start_date, due_time, end_date, description) VALUES ('{}', {}, {}, {}, {}, {}, DATE('{}'), {}, DATE('{}'), '{}')",
+        "INSERT INTO recurring_task (title, frequency_type, frequency_value, user_id, is_range, completion_max, start_date, due_time, end_date, description, category) VALUES ('{}', {}, {}, {}, {}, {}, DATE('{}'), {}, DATE('{}'), '{}', '{}')",
         create_task.title,
         create_task.frequency_type,
         create_task.day_bits,
@@ -305,6 +312,7 @@ async fn post_task(
             "2099-01-01".to_string()
         },
         create_task.description,
+        category,
     );
     match sqlx::query(&sql_query).execute(db_pool.get_ref()).await {
         Ok(result) => {
@@ -334,6 +342,33 @@ async fn post_task(
             eprintln!("{:?}", err);
             actix::HttpResponse::NotAcceptable().finish()
         }
+    }
+}
+
+#[get("/api/category/{user_id}/{month}")]
+async fn get_category_progress(
+    req: actix::HttpRequest,
+    db_pool: web::Data<mysql::MySqlPool>,
+) -> impl Responder {
+    let user_id = util::match_param::<i32>(&req, "user_id").unwrap();
+    let month_str = util::match_param::<String>(&req, "month").unwrap();
+    let mut category_data: Vec<(String, i32)> = vec![]; 
+    if let Some(date) = util::parse_date(&month_str) {
+        let sql_query = format!(
+            "SELECT p.category, CAST(COALESCE(SUM(t.completion_value), 0) AS INT) AS v FROM task AS t JOIN recurring_task AS p ON t.proto_id = p.proto_id WHERE (t.user_id = {} AND MONTH(t.due_date) = {} AND YEAR(t.due_date) = {}) GROUP BY p.category",
+            user_id, date.month, date.year
+        );
+        if let Ok(result) = sqlx::query(&sql_query).fetch_all(db_pool.get_ref()).await {
+            for row in result.into_iter() {
+                let category = row.get::<String, &str>("category");
+                let value = row.get::<i32, &str>("v");
+                println!("{category}: {value}");
+                category_data.push((category, value));
+            }
+        }
+        actix::HttpResponse::Ok().json(category_data)
+    } else {
+        actix::HttpResponse::NotFound().finish()
     }
 }
 
@@ -412,6 +447,11 @@ async fn rec() -> impl Responder {
     util::respond_with_html_page("static/rec.html")
 }
 
+#[get("/predict")]
+async fn pie() -> impl Responder {
+    util::respond_with_html_page("static/predict.html")
+}
+
 #[get("/api/users/{user_id}")]
 async fn get_users(
     req: actix::HttpRequest,
@@ -454,12 +494,14 @@ async fn get_proto_tasks(
                 let title = row.get::<String, &str>("title");
                 let frequency_type = row.get::<i32, &str>("frequency_type");
                 let day_bits = row.get::<i32, &str>("frequency_value");
-        let start_date = row.get::<chrono::NaiveDate, &str>("start_date");
-        let start_date = start_date.format("%Y-%m-%d").to_string();
-        let end_date = row.get::<chrono::NaiveDate, &str>("end_date");
-        let end_date = end_date.format("%Y-%m-%d").to_string();
-        let description = row.get::<String, &str>("description");
-        let due_time = db::convert_time(row.try_get::<MySqlTime, &str>("due_time"));
+                let start_date = row.get::<chrono::NaiveDate, &str>("start_date");
+                let start_date = start_date.format("%Y-%m-%d").to_string();
+                let end_date = row.get::<chrono::NaiveDate, &str>("end_date");
+                let end_date = end_date.format("%Y-%m-%d").to_string();
+                let description = row.get::<String, &str>("description");
+                let category = row.get::<String, &str>("category");
+                let due_time =
+                    db::convert_time(row.try_get::<MySqlTime, &str>("due_time"));
                 let proto_task = PrototypeTask {
                     proto_id,
                     title,
@@ -469,6 +511,7 @@ async fn get_proto_tasks(
                     end_date,
                     due_time,
                     description,
+                    category,
                 };
                 proto_tasks.push(proto_task);
             }
@@ -489,6 +532,7 @@ async fn main() -> io::Result<()> {
     delete_from_args(db_pool.clone()).await;
     assert!(db::execute_sql_file("./sql/create.sql", db_pool.clone()).await);
     println!("connected");
+     start_mlserver().await;
     actix::HttpServer::new(move || {
         actix::App::new()
             .app_data(web::Data::new(db_pool.clone()))
@@ -507,7 +551,9 @@ async fn main() -> io::Result<()> {
             .service(delete_proto_task)
             .service(get_proto_tasks)
             .service(get_progress)
+            .service(get_category_progress)
             .service(rec)
+            .service(pie)
             .service(afs::Files::new("js/", "./static/js/"))
             .service(afs::Files::new("css/", "./static/css/"))
             .service(afs::Files::new("assets/", "./static/assets/"))
@@ -516,6 +562,20 @@ async fn main() -> io::Result<()> {
     .bind(("127.0.0.1", 7878))?
     .run()
     .await
+}
+
+async fn start_mlserver() {
+    // 1. Spawn the Python process
+    println!("Starting ML Server...");
+    let mut py_process = std::process::Command::new("uvicorn")
+        .args(["main:app", "--reload"]) // "--host", "127.0.0.1", "--port", "8000"])
+        .stdout(std::process::Stdio::inherit())    // This sends Python logs to your Rust console
+        .spawn()
+        .expect("Failed to start Python ML server");
+
+    // 2. Give the model a few seconds to load into VRAM/RAM before Actix starts
+    println!("Waiting for model to load...");
+    // tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 }
 
 async fn delete_from_args(db_pool: MySqlPool) {

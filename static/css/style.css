@@ -188,7 +188,7 @@ button.delete-button2 {
     padding: 0;
     height: 3em;
     border: 4px solid black;
-    background-color: #00d0ff;
+    /* background-color: #00d0ff; */
     border-radius: 10px;
     margin-bottom: 4px;
 }
@@ -233,8 +233,8 @@ a {
     position: absolute;
     left: 30%;
     top: 5%;
-    visibility: hidden;
-    background-color: blue;
+    /* visibility: hidden; */
+    background-color: black;
     color: white;
     padding: 5px 0;
     z-index: 2;
@@ -251,6 +251,17 @@ a {
 
 #month-name {
     text-decoration: underline;
+}
+
+#pie-progress {
+    display: flex;
+    /* position: relative; */
+    /* float: left; */
+}
+
+.category {
+    display: block;
+    margin: 1em;
 }
 
 textarea {

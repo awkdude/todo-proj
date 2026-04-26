@@ -1,3 +1,13 @@
+export const CATEGORY_COLOR_MAP = {
+    "Work": "#ff1493",
+    "School": "#ffd700",
+    "Personal": "#ffebcd",
+    "Errands": "#dc143c",
+    "Exercise": "#adff2f",
+    "Health": "#adff2f",
+    "Social": "#00bfff",
+};
+
 export function getSetDate() {}
 
 export async function setUserSessionInfo(user_id) {

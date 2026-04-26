@@ -63,7 +63,6 @@ demo_time_input.addEventListener('change', (event) => {
     window.location.reload();
 });
 
-
 const welcome = document.querySelector('#welcome');
 welcome.textContent = `Welcome, ${sessionStorage.fullname} (@${sessionStorage.username})`;
 const clear_date = document.querySelector('#clear-date');
@@ -77,12 +76,12 @@ const date_element = document.querySelector('#create-task-date');
 const time_element = document.querySelector('#create-task-time');
 const end_date_element = document.querySelector('#create-task-end-date');
 let date_time = dateTimeFromJSDate(getJSDate());
-if(!sessionStorage.setDate) {
+if (!sessionStorage.setDate) {
     sessionStorage.setDate = date_time.date;
 }
 const is_today = sessionStorage.setDate == date_time.date;
 
-if(!is_today) {
+if (!is_today) {
     const today_button = document.querySelector('#today');
     today_button.disabled = false;
     today_button.addEventListener('click', (event) => {
@@ -123,9 +122,9 @@ function updateDateTime() {
         'Saturday',
     ];
     // TODO: Use custom datetime format
-    const now = (is_today) ?
-        getJSDate():
-        new Date(`${sessionStorage.setDate} 06:00`);
+    const now = is_today
+        ? getJSDate()
+        : new Date(`${sessionStorage.setDate} GMT-5:00`);
 
     // Simple, readable format
     const formatted_date = now.toLocaleString('en-US', {
@@ -142,10 +141,10 @@ function updateDateTime() {
         const datetime_intro = document.querySelector('#datetime-intro');
         const date = document.querySelector('#date');
         date.textContent = formatted_date;
-        if(is_today) {
-        const time = document.querySelector('#time');
-        datetime_intro.textContent = `Today is ${DAY_NAMES[now.getUTCDay()]}, `;
-        time.textContent = formatted_time;
+        if (is_today) {
+            const time = document.querySelector('#time');
+            datetime_intro.textContent = `Today is ${DAY_NAMES[now.getUTCDay()]}, `;
+            time.textContent = formatted_time;
         } else {
             datetime_intro.textContent = `Day of ${DAY_NAMES[now.getUTCDay()]}, `;
         }
@@ -183,7 +182,9 @@ async function updateTaskList() {
     task_view.replaceChildren();
 
     const progress_label = document.querySelector('#progress-label');
-    progress_label.textContent = (is_today) ? "Today's Progress" : "Day's Progress";
+    progress_label.textContent = is_today
+        ? "Today's Progress"
+        : "Day's Progress";
 
     for (const task of task_list) {
         createTaskElement(task);
@@ -191,9 +192,7 @@ async function updateTaskList() {
     // }}}
 }
 
-setInterval(() => {
-
-    let date_time = dateTimeFromJSDate(getJSDate());
+function updateProgressBar() {
     const progress_bar = document.querySelector('#progress');
     let url = `/api/progress/${sessionStorage.id}/${sessionStorage.setDate}`;
     fetch(url)
@@ -201,10 +200,14 @@ setInterval(() => {
         .then((data) => {
             const v =
                 data.max_value > 0 ? (data.value / data.max_value) * 100 : 0;
-            console.log(v);
+            // console.log(v);
             progress_bar.value = v;
         });
-}, 500);
+}
+
+setInterval(() => {
+    updateProgressBar();
+}, 250);
 
 document
     .querySelector('#submit-creation')
