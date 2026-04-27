@@ -54,6 +54,10 @@ setTimeout(() => {
     }
 }, 1000);
 
+setInterval(() => {
+    updateTaskList();
+}, 10000);
+
 const demo_time_input = document.querySelector('#demo-time');
 demo_time_input.value = sessionStorage.demo_time ?? '';
 demo_time_input.addEventListener('change', (event) => {

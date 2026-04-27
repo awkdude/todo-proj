@@ -10,9 +10,9 @@
     </head>
     <body>
         <h1>Prediction test</h1>
-        <input type="text" id="title"/>
+        <input type="text" id="title" />
         <button>Submit</button>
-        <br>
+        <br />
         <h2 id="prediction"></h2>
     </body>
     <script>
@@ -20,22 +20,25 @@
         const prediction_output = document.querySelector('#prediction');
         const submit_button = document.querySelector('button');
         submit_button.addEventListener('click', (event) => {
-        const json_data = {
-title: title_input.value
-        };
-        console.log(JSON.stringify(json_data));
+            const json_data = {
+                title: title_input.value,
+            };
+            console.log(JSON.stringify(json_data));
             fetch('http://127.0.0.1:8000/predict', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(json_data)
-            }).then(response => response.json()).then((data) => {
-                console.log(`Output: ${JSON.stringify(json_data)}`);
-                prediction_output.textContent = data.category_name
-            }).catch(err => {
-                prediction_output.textContent = 'ERROR!';
-            });
+                body: JSON.stringify(json_data),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log(`Output: ${JSON.stringify(json_data)}`);
+                    prediction_output.textContent = data.category_name;
+                })
+                .catch((err) => {
+                    prediction_output.textContent = 'ERROR!';
+                });
         });
     </script>
 </html>

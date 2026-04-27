@@ -2,6 +2,6 @@
 [x] Fix updatetasklist
 [x] populate recurring tasks
 [x] Monthly view
-[ ] ML
+[x] ML
 [ ] *Notifications
 [ ] *Edit recurring tasks frequency

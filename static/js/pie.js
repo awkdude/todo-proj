@@ -21,11 +21,11 @@ export function renderPie(obj, e_scale, _ff) {
     context.beginPath();
     for (let ent of obj) {
         context.beginPath();
-        context.fillStyle = CATEGORY_COLOR_MAP[ent[0]]; 
-        let theta = 2 * Math.PI * (ent[1] / total) ;
-        let end_angle = (start_angle + theta) ;
-        context.moveTo(cx , cy );
-        context.arc(cx , cy , r, start_angle , end_angle );
+        context.fillStyle = CATEGORY_COLOR_MAP[ent[0]];
+        let theta = 2 * Math.PI * (ent[1] / total);
+        let end_angle = start_angle + theta;
+        context.moveTo(cx, cy);
+        context.arc(cx, cy, r, start_angle, end_angle);
         context.closePath();
         context.fill();
         context.stroke();

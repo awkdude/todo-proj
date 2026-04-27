@@ -1,6 +1,5 @@
 import { dateTimeFromJSDate, getJSDate, CATEGORY_COLOR_MAP } from '/js/util.js';
-import {renderPie, } from '/js/pie.js';
-
+import { renderPie } from '/js/pie.js';
 
 const month_select = document.querySelector('#month-select');
 if (sessionStorage.setDate) {
@@ -18,19 +17,20 @@ month_select.addEventListener('change', (event) => {
     console.log(sessionStorage.setDate);
 });
 
-fetch(`/api/category/${sessionStorage.id}/${sessionStorage.setDate}`).then(response => response.json()).then(data => {
-    console.log(JSON.stringify(data));
-    renderPie(data, 0, 1);
-    for(let [name, value] of data) {
-        const category_legend = document.querySelector('#category-list');
-        const label = document.createElement('label');
-        label.textContent = name; 
-        label.classList.add('category');
-        label.style.backgroundColor = CATEGORY_COLOR_MAP[name];
-        category_legend.append(label);
-    }
-});
-
+fetch(`/api/category/${sessionStorage.id}/${sessionStorage.setDate}`)
+    .then((response) => response.json())
+    .then((data) => {
+        console.log(JSON.stringify(data));
+        renderPie(data, 0, 1);
+        for (let [name, value] of data) {
+            const category_legend = document.querySelector('#category-list');
+            const label = document.createElement('label');
+            label.textContent = name;
+            label.classList.add('category');
+            label.style.backgroundColor = CATEGORY_COLOR_MAP[name];
+            category_legend.append(label);
+        }
+    });
 
 function renderCalendar() {
     let calendar_table = document.querySelector('#calender');

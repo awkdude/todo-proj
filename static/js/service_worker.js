@@ -4,7 +4,7 @@ self.addEventListener('push', (event) => {
         title: 'Productivity Tracker',
         options: {
             renotify: true,
-        }
+        },
         body: data.body,
         icon: '/assets/favicon.svg',
     });

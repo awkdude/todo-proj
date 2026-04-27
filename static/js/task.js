@@ -1,4 +1,9 @@
-import { DELETE_ICON_SVG, clampNumber, isTaskLate, CATEGORY_COLOR_MAP } from '/js/util.js';
+import {
+    DELETE_ICON_SVG,
+    clampNumber,
+    isTaskLate,
+    CATEGORY_COLOR_MAP,
+} from '/js/util.js';
 
 export function createTaskElement(task) {
     // {{{
