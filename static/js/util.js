@@ -6,6 +6,7 @@ export const CATEGORY_COLOR_MAP = {
     Exercise: '#adff2f',
     Health: '#adff2f',
     Social: '#00bfff',
+    'Misc.': '#d0d0d0',
 };
 
 export function getSetDate() {}
@@ -22,7 +23,7 @@ export async function setUserSessionInfo(user_id) {
         return JSON.stringify(this);
     };
     Object.assign(sessionStorage, user_info);
-    console.log(`User info: ${JSON.stringify(sessionStorage)}`);
+    // console.log(`User info: ${JSON.stringify(sessionStorage)}`);
 }
 
 export function dateTimeFromJSDate(date_obj) {
@@ -42,7 +43,7 @@ export function isTaskLate(task) {
     const due_time = task.due_time || '23:59';
     const date_time_jsdate = new Date(`${task.due_date} ${due_time}`);
     const now_jsdate = getJSDate();
-    console.log(`${now_jsdate} - ${date_time_jsdate}`);
+    // console.log(`${now_jsdate} - ${date_time_jsdate}`);
     return now_jsdate > date_time_jsdate;
 }
 

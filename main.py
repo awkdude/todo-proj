@@ -38,12 +38,6 @@ class TaskRequest(BaseModel):
 def get_prediction(request: TaskRequest):
     print(f'title: {request.title}')
 
-# while True:
-#     text = input('>')
-#     if len(text) < 2:
-#         break
-    
-
 # 4. Tokenize specifically for DistilBERT
 # We set return_token_type_ids=False to avoid that TypeError
     inputs = tokenizer(
@@ -62,7 +56,3 @@ def get_prediction(request: TaskRequest):
     predictions = torch.argmax(logits, dim=-1)
     label = model.config.id2label[predictions.item()]
     return {"category_index": predictions.item(), "category_name": label}
-
-    # print(f"Logits: {logits}")
-    # print(f"Predicted Class ID: {predictions.item()}")
-    # print(f"Label: {label}")

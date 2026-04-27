@@ -291,7 +291,14 @@ async fn post_task(
     if !create_task.is_range {
         create_task.range_max = 1;
     }
-    let category = db::get_category_from_title(&create_task.title).await.unwrap();
+    let category = match db::get_category_from_title(&create_task.title).await{
+        Ok(name) => name,
+        
+    Err(e) => {
+        eprintln!("{e}");
+       "Misc." .to_string()
+    }
+    };
     let sql_query = format!(
         "INSERT INTO recurring_task (title, frequency_type, frequency_value, user_id, is_range, completion_max, start_date, due_time, end_date, description, category) VALUES ('{}', {}, {}, {}, {}, {}, DATE('{}'), {}, DATE('{}'), '{}', '{}')",
         create_task.title,

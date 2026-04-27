@@ -5,10 +5,13 @@ import {
     APP_NAME,
     dateTimeFromJSDate,
     getJSDate,
+    isTaskLate,
 } from '/js/util.js';
 
 import { createTaskElement } from '/js/task.js';
 
+const USE_NOTIF = true;
+const NOTIF_INTERVAL_MS = 60_000; // TODO: change for demo?
 const logout = document.querySelector('#logout');
 logout.innerHTML += POWER_ICON_SVG;
 console.log(`User Info: ${JSON.stringify(sessionStorage)}`);
@@ -24,35 +27,20 @@ fetch(`/api/users/${sessionStorage.id}`).then((response) => {
     }
 });
 
-setTimeout(() => {
-    // TODO:
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker
-            .register('/js/service_worker.js')
-            .then((registration) => {
-                let serviceWorker;
-                if (registration.installing) {
-                    serviceWorker = registration.installing;
-                    console.log('installing');
-                } else if (registration.waiting) {
-                    serviceWorker = registration.waiting;
-                    console.log('waiting');
-                } else if (registration.active) {
-                    serviceWorker = registration.active;
-                    console.log('active');
+if (USE_NOTIF) {
+    const opt_notify_button = document.querySelector('#opt-notify');
+    if (Notification.permission !== 'granted') {
+        opt_notify_button.hidden = '';
+        opt_notify_button.addEventListener('click', (event) => {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    new Notification('Notifications enabled!');
+                    opt_notify_button.hidden = 'hidden';
                 }
-                if (serviceWorker) {
-                    // logState(serviceWorker.state);
-                    serviceWorker.addEventListener('statechange', (e) => {
-                        // logState(e.target.state);
-                    });
-                }
-            })
-            .catch((error) => {
-                consle.log(`Error registering service worker: ${e.toString()}`);
             });
+        });
     }
-}, 1000);
+}
 
 setInterval(() => {
     updateTaskList();
@@ -180,7 +168,7 @@ async function updateTaskList() {
     let url = `/api/tasks/${sessionStorage.id}/${sessionStorage.setDate}`;
     console.log(url);
     const task_list = await fetch(url).then((response) => response.json());
-    console.log(`Tasks: ${JSON.stringify(task_list)}`);
+    // console.log(`Tasks: ${JSON.stringify(task_list)}`);
     console.log(task_list);
     const task_view = document.querySelector('#task-elements');
     task_view.replaceChildren();
@@ -192,6 +180,54 @@ async function updateTaskList() {
 
     for (const task of task_list) {
         createTaskElement(task);
+    }
+
+    if (USE_NOTIF) {
+        const undone_tasks = task_list
+            .filter((t) => t.completion_value < t.range_max && !isTaskLate(t))
+            .toSorted((t1, t2) => {
+                if (t1.due_time && !t2.due_time) {
+                    return -1;
+                } else if (!t1.due_time && t2.due_time) {
+                    return 1;
+                } else if (!t1.due_time && !t2.due_time) {
+                    return 0;
+                }
+                return t1.due_time.localeCompare(t2.due_time);
+            });
+        if (undone_tasks.length > 0) {
+            const task_to_notify = undone_tasks[0];
+
+            if (!sessionStorage.last_notify) {
+                sessionStorage.last_notify = new Date().toString();
+            }
+            const last_notify_ms = new Date(sessionStorage.last_notify);
+            const notify_duration_ms = new Date() - last_notify_ms;
+            console.log(notify_duration_ms / 1000.0);
+            if (
+                Notification.permission === 'granted' &&
+                notify_duration_ms > NOTIF_INTERVAL_MS
+            ) {
+                Notification.requestPermission().then((permission) => {
+                    if (permission === 'granted') {
+                        let notif_label = `Don't forget '${task_to_notify.title}!'`;
+                        if (task_to_notify.due_time) {
+                            notif_label += ` Due by ${task_to_notify.due_time}`;
+                        }
+                        new Notification(notif_label, {
+                            title: 'Productivity Tracker',
+                            options: {
+                                renotify: true,
+                            },
+                            data: {
+                                url: '/home',
+                            },
+                        });
+                    }
+                });
+                sessionStorage.last_notify = new Date().toString();
+            }
+        }
     }
     // }}}
 }

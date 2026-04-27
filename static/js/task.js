@@ -15,7 +15,7 @@ export function createTaskElement(task) {
     let input_element = document.createElement('input');
     const task_datetime = { date: task.date, time: task.time };
 
-    console.log(task_datetime);
+    // console.log(task_datetime);
     const too_late = isTaskLate(task);
     if (!too_late) {
         // create task input elements {{{
@@ -26,7 +26,7 @@ export function createTaskElement(task) {
             input_element.addEventListener('change', function (event) {
                 event.preventDefault();
                 let checkbox = event.target;
-                console.log('checked!');
+                // console.log('checked!');
                 const response = fetch(`/api/tasks/${task.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -35,9 +35,9 @@ export function createTaskElement(task) {
                     }),
                 }).then((response) => {
                     if (response.ok) {
-                        console.log(`${task.title} updated!`);
+                        // console.log(`${task.title} updated!`);
                     } else {
-                        console.error(`${task.title} NOT updated!`);
+                        // console.error(`${task.title} NOT updated!`);
                     }
                 });
             });
@@ -61,9 +61,9 @@ export function createTaskElement(task) {
                     }),
                 }).then((response) => {
                     if (response.ok) {
-                        console.log(`${task.title} updated!`);
+                        // console.log(`${task.title} updated!`);
                     } else {
-                        console.error(`${task.title} NOT updated!`);
+                        // console.error(`${task.title} NOT updated!`);
                     }
                 });
             });
@@ -90,7 +90,7 @@ export function createTaskElement(task) {
     let delete_element = document.createElement('button');
     delete_element.classList.add('delete-button');
     delete_element.id = `b${newid}`;
-    console.log(Number.parseInt(delete_element.id.substring(1)));
+    // console.log(Number.parseInt(delete_element.id.substring(1)));
     delete_element.innerHTML = DELETE_ICON_SVG;
     if (!too_late) {
         delete_element.addEventListener('click', function (event) {
@@ -98,11 +98,11 @@ export function createTaskElement(task) {
                 method: 'DELETE',
             }).then((response) => {
                 if (response.ok) {
-                    console.log(`${task.title} deleted!`);
+                    // console.log(`${task.title} deleted!`);
                     const task_element = document.querySelector(`#t${newid}`);
                     task_element.remove();
                 } else {
-                    console.error(`${task.title} NOT deleted!`);
+                    /// console.error(`${task.title} NOT deleted!`);
                 }
             });
             event.preventDefault();
@@ -112,7 +112,7 @@ export function createTaskElement(task) {
     }
     const due_time_element = document.createElement('span');
     if (task.due_time) {
-        console.log(task.due_time);
+        // console.log(task.due_time);
         due_time_element.textContent = `Due by ${task.due_time}`;
     }
     new_task_item.append(label_element, delete_element, due_time_element);
@@ -124,6 +124,6 @@ export function createTaskElement(task) {
     new_task_item.append(tooltip);
     const task_view = document.querySelector('#task-elements');
     task_view.append(new_task_item);
-    console.log(`${task.title} added`);
+    // console.log(`${task.title} added`);
     // }}}
 }

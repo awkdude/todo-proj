@@ -10,7 +10,7 @@ fetch(`/api/proto_tasks/${sessionStorage.id}`)
             proto_task_element.id = `p${proto_task.proto_id}`;
             let title_label = document.createElement('label');
             title_label.classList.add('rec-label');
-            title_label.textContent = `${proto_task.proto_id}: ${proto_task.title}`;
+            title_label.textContent = `${proto_task.title}`;
             let freq_label = document.createElement('label');
             freq_label.classList.add('rec-label');
             switch (proto_task.frequency_type) {
